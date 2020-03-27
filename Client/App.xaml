@@ -1,0 +1,51 @@
+﻿<Application x:Class="Client.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Client"
+             xmlns:utils="clr-namespace:Client.Utils"
+             xmlns:views="clr-namespace:Client.Views"
+             xmlns:enums="clr-namespace:Client.Enums"
+             StartupUri="MainWindow.xaml">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Blue.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Lime.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!--Locals-->
+            <DataTemplate x:Key="RegisterTemplate">
+                <views:RegisterPage/>
+            </DataTemplate>
+            <DataTemplate x:Key="LoginTemplate">
+                <views:LoginPage/>
+            </DataTemplate>
+            <DataTemplate x:Key="ChatTemplate">
+                <views:ChatPage/>
+            </DataTemplate>
+
+            <Style x:Key="ChatContentStyle" TargetType="ContentControl">
+                <Setter Property="ContentTemplate" Value="{StaticResource RegisterTemplate}"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding UserState}" Value="{x:Static enums:UserState.Login}">
+                        <Setter Property="ContentTemplate" Value="{StaticResource LoginTemplate}"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding UserState}" Value="{x:Static enums:UserState.Register}">
+                        <Setter Property="ContentTemplate" Value="{StaticResource RegisterTemplate}"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding UserState}" Value="{x:Static enums:UserState.Chat}">
+                        <Setter Property="ContentTemplate" Value="{StaticResource ChatTemplate}"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <utils:ViewModelLocator x:Key="VMLocator"/>
+
+        </ResourceDictionary>
+    </Application.Resources>
+
+
+</Application>
