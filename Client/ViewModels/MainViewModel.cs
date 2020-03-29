@@ -284,7 +284,7 @@ namespace Client.ViewModels
                 }
                 else
                 {
-                    dialogService.ShowNotification("Username is already in use");
+                    dialogService.ShowNotification(result.Item2);
                     return false;
                 }
 
@@ -347,7 +347,7 @@ namespace Client.ViewModels
                 await chatService.TypingAsync(SelectedParticipant.Username);
                 return true;
             }
-            catch (Exception e) { return false; }
+            catch (Exception) { return false; }
         }
 
         private bool CanUseTypingCommand()
@@ -376,7 +376,7 @@ namespace Client.ViewModels
                 await chatService.SendUnicastMessageAsync(recepient, _textMessage);
                 return true;
             }
-            catch (Exception e) { return false; }
+            catch (Exception) { return false; }
             finally
             {
                 ChatMessage msg = new ChatMessage

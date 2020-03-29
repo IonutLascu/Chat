@@ -42,7 +42,7 @@
                 <!--When you need to obtain the password from the PasswordBox, you can use the Password property from Code-behind. However, 
                 for security reasons, the Password property is not implemented as a dependency property, which means that you can't bind to it.-->
                 <TextBlock Grid.Row="2" Width="Auto" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20">Password</TextBlock>
-                <PasswordBox x:Name="btnLoginPasswordBox" Grid.Row="3" Grid.Column="1" Width ="159" Height="30" HorizontalAlignment="Center" 
+                <PasswordBox x:Name="btnLoginPasswordBox" Grid.Row="3" Grid.Column="1" Width ="160" Height="30" HorizontalAlignment="Center" 
                              VerticalAlignment="Center" HorizontalContentAlignment="Center" FontSize="15" 
                              utils:PasswordBoxAssistant.BindPassword="true" utils:PasswordBoxAssistant.BoundPassword="{Binding Path=Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 

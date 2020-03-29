@@ -74,7 +74,7 @@ namespace Server
             {
                 Console.WriteLine($"++ {name} logged in");
                 List<User> users = new List<User>(ChatClients.Values);
-                User newUser = DBQuery.GetUser(name);
+                User newUser = new User { UserId = Context.ConnectionId, Username = name, Password = password };
                 var added = ChatClients.TryAdd(name, newUser);
                 if (!added)
                     return null;
