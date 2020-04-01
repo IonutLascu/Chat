@@ -20,6 +20,9 @@ namespace Client.Services
         public event Action ConnectionClosed;
         public event Action<string> ParticipantTyping;
 
+        public event Action<string> InviteToPlay;
+        public event Action<string, string> GetResponse;
+
         private IHubProxy hubProxy;
         private HubConnection connection;
         private string url = "http://localhost:8080/signalchat";
@@ -39,6 +42,8 @@ namespace Client.Services
             hubProxy.On<string, string>("BroadcastTextMessage", (n, m) => NewTextMessage?.Invoke(n, m, MessageType.Broadcast));
             hubProxy.On<string, string>("UnicastTextMessage", (n, m) => NewTextMessage?.Invoke(n, m, MessageType.Unicast));
             hubProxy.On<string>("ParticipantTyping", (p) => ParticipantTyping?.Invoke(p));
+            hubProxy.On<string>("InviteToPlay", (p) => InviteToPlay?.Invoke(p));
+            hubProxy.On<string, string>("GetResponse", (p, q) => GetResponse?.Invoke(p, q));
 
             connection.Reconnecting += Reconnecting;
             connection.Reconnected += Reconnected;
@@ -93,6 +98,16 @@ namespace Client.Services
         public async Task TypingAsync(string recepient)
         {
             await hubProxy.Invoke("Typing", recepient);
+        }
+
+        public async Task SendInviteToPlayAsync(string recepient)
+        {
+            await hubProxy.Invoke("SendInviteToPlay", recepient);
+        }
+
+        public async Task SendResponseAsync(string recepient, object response)
+        {
+            await hubProxy.Invoke("SendResponseBack", new object[] { recepient, response });
         }
     }
 }

@@ -15,5 +15,7 @@ namespace Server
         void BroadcastTextMessage(string sender, string message);
         void UnicastTextMessage(string sender, string message);
         void ParticipantTyping(string sender);
+        Task InviteToPlay(string sender);
+        void GetResponse(string sender, object response);
     }
 }

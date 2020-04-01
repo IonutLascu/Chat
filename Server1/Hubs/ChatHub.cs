@@ -12,7 +12,7 @@ namespace Server
     [HubName("ChatHub")]
     public class ChatHub : Hub<IClient>
     {
-        private static ConcurrentDictionary<string, User> ChatClients = new ConcurrentDictionary<string, User>();
+        private static readonly ConcurrentDictionary<string, User> ChatClients = new ConcurrentDictionary<string, User>();
 
         public override Task OnDisconnected(bool stopCalled)
         {
@@ -121,11 +121,36 @@ namespace Server
 
         public void Typing(string recepient)
         {
-            if (string.IsNullOrEmpty(recepient)) return;
+            if (string.IsNullOrEmpty(recepient)) 
+                return;
             var sender = Clients.CallerState.UserName;
             User client = new User();
             ChatClients.TryGetValue(recepient, out client);
             Clients.Client(client.UserId).ParticipantTyping(sender);
         }
+
+        public async Task SendInviteToPlay(string recepient)
+        {
+            if (string.IsNullOrEmpty(recepient))
+                return;
+
+            var sender = Clients.CallerState.UserName;
+            User client = new User();
+            ChatClients.TryGetValue(recepient, out client);
+
+            //wait to response client
+            await Clients.Client(client.UserId).InviteToPlay(sender);
+        }
+
+        public async Task SendResponseBack(string recepient, object response)
+        {
+            
+            var sender = Clients.CallerState.UserName;
+            
+            User client = new User();
+            ChatClients.TryGetValue(recepient, out client);
+            Clients.Client(client.UserId).GetResponse(sender, response);
+        }
+
     }
 }

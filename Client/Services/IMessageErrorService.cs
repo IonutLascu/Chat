@@ -8,7 +8,7 @@ namespace Client.Services
 {
     public interface IMessageErrorService
     {
-        void ShowNotification(string message, string caption = "");
-        bool ShowConfirmationRequest(string message, string caption = "");
+        void ShowNotification(string message, string caption = "", bool autoClose = false);
+        bool ShowConfirmationRequest(string message, string caption = "", bool autoClose = false);
     }
 }

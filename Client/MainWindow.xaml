@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:Client"
         mc:Ignorable="d"
         DataContext="{Binding Source={StaticResource VMLocator}, Path=MainVM}"
-        Title="MainWindow" Height="600" Width="800"
+        Title="Chess Game" Height="600" Width="800"
         MinHeight="600" MinWidth="800">
 
     <i:Interaction.Triggers>
@@ -19,12 +19,16 @@
         </i:EventTrigger>
     </i:Interaction.Triggers>
 
-    <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-        <Image Width="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Image Width="300" Visibility="{Binding Path=VisibilityTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" >
             <Image.Source>
-                <BitmapImage DecodePixelWidth="300" UriSource="../../Resources/title.png" />
+                <BitmapImage DecodePixelWidth="300" UriSource="/Resources/title.png" />
             </Image.Source>
         </Image>
-        <ContentControl Content="{Binding}" Style="{StaticResource ChatContentStyle}"/>
-    </StackPanel>
+        <ContentControl Grid.Row="1" Content="{Binding}" Style="{StaticResource ChatContentStyle}"/>
+    </Grid>
 </Window>

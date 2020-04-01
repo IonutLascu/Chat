@@ -18,6 +18,8 @@ namespace Client.Services
         event Action ConnectionClosed;
         event Action<string, string, MessageType> NewTextMessage;
         event Action<string> ParticipantTyping;
+        event Action<string> InviteToPlay;
+        event Action<string, string> GetResponse;
 
         Task ConnectAsync();
         //receive list of users and message 
@@ -27,5 +29,7 @@ namespace Client.Services
         Task SendBroadcastMessageAsync(string msg);
         Task SendUnicastMessageAsync(string recepient, string msg);
         Task TypingAsync(string recepient);
+        Task SendInviteToPlayAsync(string recepient);
+        Task SendResponseAsync(string recepient, object response);
     }
 }

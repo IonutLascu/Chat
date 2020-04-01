@@ -14,6 +14,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Diagnostics;
 using System.Reactive.Linq;
+using System.Windows;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace Client.ViewModels
 {
@@ -22,6 +25,19 @@ namespace Client.ViewModels
         private IClientService chatService;
         private IMessageErrorService dialogService;
         private TaskFactory ctxTaskFactory;
+
+        #region Common Bindings
+        private Visibility _visibilityTitle;
+        public Visibility VisibilityTitle
+        {
+            get => _visibilityTitle;
+            set
+            {
+                _visibilityTitle = value;
+                OnPropertyChanged();
+            }
+        }
+        #endregion
 
         #region Register Bindings
 
@@ -155,7 +171,7 @@ namespace Client.ViewModels
         private ICommand _openRegisterPage;
         public ICommand OpenRegisterPage
         {
-            get 
+            get
             {
                 return _openRegisterPage ?? (_openRegisterPage = new Command((o) => OpenRegister()));
             }
@@ -173,12 +189,13 @@ namespace Client.ViewModels
         {
             get
             {
-                return _openLoginPage?? (_openLoginPage = new Command((o) => OpenLogin()));
+                return _openLoginPage ?? (_openLoginPage = new Command((o) => OpenLogin()));
             }
         }
         private void OpenLogin()
         {
             UserState = UserState.Login;
+            VisibilityTitle = Visibility.Visible;
             //do not let the user, pass and email written
 
             NewUserName = string.Empty;
@@ -229,6 +246,7 @@ namespace Client.ViewModels
                 if (result == string.Empty)
                 {
                     UserState = UserState.Login;
+                    VisibilityTitle = Visibility.Visible;
                     dialogService.ShowNotification("Register succesfully!");
 
                     NewUserName = string.Empty;
@@ -276,9 +294,10 @@ namespace Client.ViewModels
                 result = await chatService.LoginAsync(_userName, _password);
                 if (result.Item1 != null)
                 {
-                    result.Item1.ForEach(u => Participants.Add(new Participant { Username = u.Username}));
+                    result.Item1.ForEach(u => Participants.Add(new Participant { Username = u.Username }));
                     UserState = UserState.Chat;
-                    IsLoggedIn = true;  
+                    VisibilityTitle = Visibility.Collapsed;
+                    IsLoggedIn = true;
                     dialogService.ShowNotification(result.Item2);
                     return true;
                 }
@@ -289,7 +308,7 @@ namespace Client.ViewModels
                 }
 
             }
-            catch (Exception ) { return false; }
+            catch (Exception) { return false; }
         }
 
         private bool CanLogin()
@@ -298,6 +317,46 @@ namespace Client.ViewModels
                 && !string.IsNullOrEmpty(Password) && Password.Length >= 2
                 && IsConnected;
         }
+        #endregion
+
+        #region Play Game Command
+        private ICommand _playChessGameCommand;
+        public ICommand PlayChessGameCommand
+        {
+            get
+            {
+                return _playChessGameCommand ?? (_playChessGameCommand =
+                  new CommandAsync(() => SendInviteToPlay(), (o) => CanSendInviteToPlay()));
+            }
+        }
+        private async Task<bool> SendInviteToPlay()
+        {
+            try
+            {
+                var recepient = _selectedParticipant.Username;
+                await chatService.SendInviteToPlayAsync(recepient);
+                return true;
+            }
+            catch (Exception) { return false; }
+        }
+
+        private bool CanSendInviteToPlay()
+        {
+            return (IsConnected && _selectedParticipant != null && _selectedParticipant.IsLoggedIn);
+        }
+
+        private async Task SendResponse(string name, object response)
+        {
+            try
+            {
+                await chatService.SendResponseAsync(name, response);
+            }
+            catch (Exception) { 
+                //to do
+            }
+        }
+
+
         #endregion
 
         #region Logout Command
@@ -474,6 +533,33 @@ namespace Client.ViewModels
                 Observable.Timer(TimeSpan.FromMilliseconds(1500)).Subscribe(t => person.IsTyping = false);
             }
         }
+
+        private async void InviteToPlay(string name)
+        {
+            //there was a problem with owner of the current application
+            bool result = false;
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                result = dialogService.ShowConfirmationRequest($"Player {name} wanna play with you", "", true);
+            }));
+            
+            //there was also a problem "How to send message to the Hub??? because signalR can't has return type only void or Task"
+            //send the result to the server
+            await SendResponse(name, result);
+        }
+
+        private void GetResponse(string name, object response)
+        {
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                if (Convert.ToBoolean(response) == false)
+                dialogService.ShowNotification($"Player {name} does not want to play");
+
+            else if (Convert.ToBoolean(response) == true)
+                dialogService.ShowNotification($"Player {name} accepted request");
+            }));
+        }
+
         #endregion
 
         public MainViewModel(IClientService chatSvc, IMessageErrorService diagSvc)
@@ -490,9 +576,11 @@ namespace Client.ViewModels
             chatSvc.ConnectionReconnecting += Reconnecting;
             chatSvc.ConnectionReconnected += Reconnected;
             chatSvc.ConnectionClosed += Disconnected;
+            chatSvc.InviteToPlay += InviteToPlay;
+            chatSvc.GetResponse += GetResponse;
+            
 
             ctxTaskFactory = new TaskFactory(TaskScheduler.FromCurrentSynchronizationContext());
         }
-
     }
 }
