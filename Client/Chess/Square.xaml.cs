@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -15,7 +17,7 @@ using System.Windows.Shapes;
 
 namespace Chess
 {
-    public partial class Square : UserControl
+    public partial class Square : UserControl, INotifyPropertyChanged
     {
         public color Color { get; set; }
         public Piece Piece { get; set; }
@@ -40,6 +42,13 @@ namespace Chess
 
         public static readonly RoutedEvent ClickEvent = EventManager.RegisterRoutedEvent(
         "Click", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(Square));
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
 
         public event RoutedEventHandler Click
         {
@@ -167,7 +176,7 @@ namespace Chess
                     if(King.isKingWhiteInChess == true)
                     {
                         //the move is not good
-                        MessageBox.Show("Ai grija fraiere!", "", MessageBoxButton.OK);
+                        MessageBox.Show("King in chess!", "", MessageBoxButton.OK);
                         copyContentSquare(table[tempSq.Row, tempSq.Column], getLastPieceCaptured());
                         clearContentSquare(ref table[tempSq.Row, tempSq.Column]);
                         return;
@@ -179,7 +188,7 @@ namespace Chess
                     isKingInChess(color.eBrown);
                     if (King.isKingBrawnInChess == true)
                     {
-                        MessageBox.Show("Ai grija fraiere!", "", MessageBoxButton.OK);
+                        MessageBox.Show("King in chess!", "", MessageBoxButton.OK);
                         copyContentSquare(table[tempSq.Row, tempSq.Column], getLastPieceCaptured());
                         clearContentSquare(ref table[tempSq.Row, tempSq.Column]);
                         return;

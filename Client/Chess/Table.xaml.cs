@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,13 +24,21 @@ namespace Chess
     }
     
 
-    public partial class Table : UserControl
+    public partial class Table : UserControl, INotifyPropertyChanged
     {
         static public Square[,] table = new Square[8, 8];
         static public Square selectedPiece = null;
         static public int Turn = 0;
         static public List<Square> arrCaputeredPiece = new List<Square>();
-        static public Piece getPieceInstance(piece p, color c)
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
+        static private Piece getPieceInstance(piece p, color c)
         {
             switch (p)
             {

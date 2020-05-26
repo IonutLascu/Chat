@@ -21,8 +21,8 @@ namespace Chess
             : base(p, c)
         {
             base.Uri = c == color.eWhite ?
-                new Uri(@"../Resources/Rook.png", UriKind.Relative) :
-                new Uri(@"../Resources/RookB.png", UriKind.Relative);
+                new Uri(@"../Chess/Resources/Rook.png", UriKind.Relative) :
+                new Uri(@"../Chess/Resources/RookB.png", UriKind.Relative);
 
             Img = new Image();
             Img.Source = new BitmapImage(Uri);

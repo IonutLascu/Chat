@@ -542,6 +542,12 @@ namespace Client.ViewModels
             {
                 result = dialogService.ShowConfirmationRequest($"Player {name} wanna play with you", "", true);
             }));
+
+            //start game
+            if (true == result)
+            {
+                UserState = UserState.InGame;
+            }
             
             //there was also a problem "How to send message to the Hub??? because signalR can't has return type only void or Task"
             //send the result to the server
@@ -557,6 +563,9 @@ namespace Client.ViewModels
 
             else if (Convert.ToBoolean(response) == true)
                 dialogService.ShowNotification($"Player {name} accepted request");
+                UserState = UserState.InGame;
+
+
             }));
         }
 

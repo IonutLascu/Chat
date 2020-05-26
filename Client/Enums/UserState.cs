@@ -11,5 +11,6 @@ namespace Client.Enums
         Login,
         Chat,
         Register,
+        InGame,
     }
 }
