@@ -17,6 +17,7 @@ using System.Reactive.Linq;
 using System.Windows;
 using System.Threading;
 using System.Windows.Threading;
+using Chess;
 
 namespace Client.ViewModels
 {
@@ -567,6 +568,26 @@ namespace Client.ViewModels
 
 
             }));
+        }
+        private ICommand _updateChessTable;
+        public ICommand UpdateChessTable
+        {
+            get
+            {
+                return _updateChessTable ?? (_updateChessTable = new Command((o) => SendMove()));
+            }
+        }
+        private async Task SendMove()
+        {
+            try
+            {
+                
+                //var recepient = _selectedParticipant.Username;
+                //await chatService.SendMoveAsync(recepient, Table.table);
+            }
+            catch (Exception) { 
+                //TO DO
+            }
         }
 
         #endregion

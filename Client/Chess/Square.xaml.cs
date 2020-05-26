@@ -17,7 +17,7 @@ using System.Windows.Shapes;
 
 namespace Chess
 {
-    public partial class Square : UserControl, INotifyPropertyChanged
+    public partial class Square : UserControl
     {
         public color Color { get; set; }
         public Piece Piece { get; set; }
@@ -42,13 +42,6 @@ namespace Chess
 
         public static readonly RoutedEvent ClickEvent = EventManager.RegisterRoutedEvent(
         "Click", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(Square));
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string name = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
 
         public event RoutedEventHandler Click
         {

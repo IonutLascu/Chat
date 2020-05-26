@@ -5,26 +5,89 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" 
              d:DesignHeight="500" d:DesignWidth="500">
-    <Grid x:Name="mainTable" Width="480" Height="480" >
-        <Grid.RowDefinitions>
-            <RowDefinition Height="60"/>
-            <RowDefinition Height="60"/>
-            <RowDefinition Height="60"/>
-            <RowDefinition Height="60"/>
-            <RowDefinition Height="60"/>
-            <RowDefinition Height="60"/>
-            <RowDefinition Height="60"/>
-            <RowDefinition Height="60"/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="60"/>
-            <ColumnDefinition Width="60"/>
-            <ColumnDefinition Width="60"/>
-            <ColumnDefinition Width="60"/>
-            <ColumnDefinition Width="60"/>
-            <ColumnDefinition Width="60"/>
-            <ColumnDefinition Width="60"/>
-            <ColumnDefinition Width="60"/>
-        </Grid.ColumnDefinitions>
+    <Grid>
+        <Grid Width="540" Height="540">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="30"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="30"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="30"/>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="1" Content="A" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
+            <Label Grid.Column="2" Content="B" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
+            <Label Grid.Column="3" Content="C" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
+            <Label Grid.Column="4" Content="D" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
+            <Label Grid.Column="5" Content="E" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
+            <Label Grid.Column="6" Content="F" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
+            <Label Grid.Column="7" Content="G" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
+            <Label Grid.Column="8" Content="H" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
+           
+            <Label Grid.Row="10" Grid.Column="1" Content="A" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
+            <Label Grid.Row="10" Grid.Column="2" Content="B" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
+            <Label Grid.Row="10" Grid.Column="3" Content="C" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
+            <Label Grid.Row="10" Grid.Column="4" Content="D" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
+            <Label Grid.Row="10" Grid.Column="5" Content="E" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
+            <Label Grid.Row="10" Grid.Column="6" Content="F" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
+            <Label Grid.Row="10" Grid.Column="7" Content="G" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
+            <Label Grid.Row="10" Grid.Column="8" Content="H" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
+
+            <Label Grid.Column="10" Grid.Row="1" Content="1" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
+            <Label Grid.Column="10" Grid.Row="2" Content="2" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
+            <Label Grid.Column="10" Grid.Row="3" Content="3" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
+            <Label Grid.Column="10" Grid.Row="4" Content="4" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
+            <Label Grid.Column="10" Grid.Row="5" Content="5" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
+            <Label Grid.Column="10" Grid.Row="6" Content="6" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
+            <Label Grid.Column="10" Grid.Row="7" Content="7" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
+            <Label Grid.Column="10" Grid.Row="8" Content="8" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
+            
+            <Label Grid.Column="0" Grid.Row="1" Content="1" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
+            <Label Grid.Column="0" Grid.Row="2" Content="2" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
+            <Label Grid.Column="0" Grid.Row="3" Content="3" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
+            <Label Grid.Column="0" Grid.Row="4" Content="4" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
+            <Label Grid.Column="0" Grid.Row="5" Content="5" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
+            <Label Grid.Column="0" Grid.Row="6" Content="6" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
+            <Label Grid.Column="0" Grid.Row="7" Content="7" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
+            <Label Grid.Column="0" Grid.Row="8" Content="8" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
+        </Grid>
+        <Grid x:Name="mainTable" Width="480" Height="480" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="60"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="60"/>
+            </Grid.ColumnDefinitions>
+        </Grid>
     </Grid>
 </UserControl>

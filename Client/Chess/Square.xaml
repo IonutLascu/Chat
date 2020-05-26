@@ -6,7 +6,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <StackPanel>
-        <Button x:Name="Box" Width="60" Height="60"/>
-        
+        <Button x:Name="Box" Width="60" Height="60" Command="{Binding UpdateChessTable}"/>
+
     </StackPanel>
 </UserControl>

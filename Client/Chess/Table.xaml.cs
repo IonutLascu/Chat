@@ -23,20 +23,12 @@ namespace Chess
         eWhite,
     }
     
-
-    public partial class Table : UserControl, INotifyPropertyChanged
+    public partial class Table : UserControl
     {
         static public Square[,] table = new Square[8, 8];
         static public Square selectedPiece = null;
         static public int Turn = 0;
         static public List<Square> arrCaputeredPiece = new List<Square>();
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string name = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
 
         static private Piece getPieceInstance(piece p, color c)
         {
@@ -69,6 +61,29 @@ namespace Chess
             initTableSqare();
             initTablePiece();
         }
+
+        /*
+         Func<int, string> letter = (int number) => {
+
+                if (number == 0)
+                    return "A";
+                else if (number == 1)
+                    return "B";
+                else if (number == 2)
+                    return "C";
+                else if (number == 3)
+                    return "D";
+                else if (number == 4)
+                    return "E";
+                else if (number == 5)
+                    return "F";
+                else if (number == 6)
+                    return "G";
+                else if (number == 7)
+                    return "H";
+                return "";
+            };
+         */
 
         private void Add(int i, int j, color c, Piece p)
         {
