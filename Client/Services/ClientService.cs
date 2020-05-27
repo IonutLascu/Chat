@@ -22,6 +22,7 @@ namespace Client.Services
 
         public event Action<string> InviteToPlay;
         public event Action<string, string> GetResponse;
+        public event Action<string, int, int, int, int> ReceiveMove;
 
         private IHubProxy hubProxy;
         private HubConnection connection;
@@ -44,6 +45,7 @@ namespace Client.Services
             hubProxy.On<string>("ParticipantTyping", (p) => ParticipantTyping?.Invoke(p));
             hubProxy.On<string>("InviteToPlay", (p) => InviteToPlay?.Invoke(p));
             hubProxy.On<string, string>("GetResponse", (p, q) => GetResponse?.Invoke(p, q));
+            hubProxy.On<string, int, int, int, int>("ReceiveMove", (p1, p2, p3, p4, p5) => ReceiveMove?.Invoke(p1, p2, p3, p4, p5));
 
             connection.Reconnecting += Reconnecting;
             connection.Reconnected += Reconnected;
@@ -108,6 +110,11 @@ namespace Client.Services
         public async Task SendResponseAsync(string recepient, object response)
         {
             await hubProxy.Invoke("SendResponseBack", new object[] { recepient, response });
+        }
+
+        public async Task SendMoveAsync(string recepient, int fromR, int fromC, int toR, int toC)
+        {
+            await hubProxy.Invoke("SendMoveAsync", new object[] {recepient, fromR, fromC, toR, toC });
         }
     }
 }

@@ -144,12 +144,21 @@ namespace Server
 
         public async Task SendResponseBack(string recepient, object response)
         {
-            
             var sender = Clients.CallerState.UserName;
             
             User client = new User();
             ChatClients.TryGetValue(recepient, out client);
             Clients.Client(client.UserId).GetResponse(sender, response);
+        }
+
+        public async Task SendMoveAsync(string recepient, int fromR, int fromC, int toR, int toC)
+        {
+            var sender = Clients.CallerState.UserName;
+
+            User client = new User();
+            ChatClients.TryGetValue(recepient, out client);
+
+            Clients.Client(client.UserId).ReceiveMove(sender, fromR, fromC, toR, toC);
         }
 
     }

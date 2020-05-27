@@ -18,6 +18,8 @@ using System.Windows;
 using System.Threading;
 using System.Windows.Threading;
 using Chess;
+using System.Collections.Specialized;
+using Client.Chess;
 
 namespace Client.ViewModels
 {
@@ -548,8 +550,12 @@ namespace Client.ViewModels
             if (true == result)
             {
                 UserState = UserState.InGame;
+                Table.InstanceGame = new InstanceGame(new Player(_userName) { IsWhite = true, IsBlack = false },
+                                                       new Player(name) { IsBlack = true , IsWhite = false}) ;
+                Table.isWhiteTurn = true;
+                Table.arrMoves.CollectionChanged += CollectionWasChanged;
             }
-            
+
             //there was also a problem "How to send message to the Hub??? because signalR can't has return type only void or Task"
             //send the result to the server
             await SendResponse(name, result);
@@ -564,30 +570,48 @@ namespace Client.ViewModels
 
             else if (Convert.ToBoolean(response) == true)
                 dialogService.ShowNotification($"Player {name} accepted request");
+
                 UserState = UserState.InGame;
-
-
+                Table.InstanceGame = new InstanceGame(new Player(_userName) { IsBlack = true, IsWhite = false }, 
+                                                        new Player(name) { IsWhite = true, IsBlack = false }) ;
+                Table.arrMoves.CollectionChanged += CollectionWasChanged;
             }));
         }
-        private ICommand _updateChessTable;
-        public ICommand UpdateChessTable
+
+        private void CollectionWasChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            get
-            {
-                return _updateChessTable ?? (_updateChessTable = new Command((o) => SendMove()));
-            }
+            ObservableCollection<Moves> collection = sender as ObservableCollection<Moves>;
+
+            SendMove(collection.Last().FromSquare.Row,
+                collection.Last().FromSquare.Column,
+                collection.Last().ToSquare.Row,
+                collection.Last().ToSquare.Column);
+
         }
-        private async Task SendMove()
+
+        private void SendMove(int FromRow, int FromColumn, int ToRow, int ToColumn)
         {
             try
             {
-                
-                //var recepient = _selectedParticipant.Username;
-                //await chatService.SendMoveAsync(recepient, Table.table);
+                var recepient = Table.InstanceGame.Opponent.Username;
+                chatService.SendMoveAsync(recepient, FromRow, FromColumn, ToRow, ToColumn);
+                if (Table.InstanceGame.Player.IsWhite)
+                    Table.isWhiteTurn = false;
+                else if(Table.InstanceGame.Player.IsBlack) 
+                    Table.isBrownTurn = false;
             }
             catch (Exception) { 
                 //TO DO
             }
+        }
+
+        private void ReceiveMove(string name, int fromRow, int fromColumn, int toRow, int toColumn)
+        {
+            if (Table.InstanceGame.Player.IsWhite)
+                Table.isWhiteTurn = true;
+            else if (Table.InstanceGame.Player.IsBlack)
+                Table.isBrownTurn = true;
+            Table.arrOponentMoves.Add(new Moves(fromRow, fromColumn, toRow, toColumn));
         }
 
         #endregion
@@ -608,9 +632,11 @@ namespace Client.ViewModels
             chatSvc.ConnectionClosed += Disconnected;
             chatSvc.InviteToPlay += InviteToPlay;
             chatSvc.GetResponse += GetResponse;
+            chatSvc.ReceiveMove += ReceiveMove;
             
 
             ctxTaskFactory = new TaskFactory(TaskScheduler.FromCurrentSynchronizationContext());
         }
+
     }
 }

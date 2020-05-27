@@ -3,6 +3,7 @@ using Client.Enums;
 using Client.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Client.Services
@@ -18,8 +19,10 @@ namespace Client.Services
         event Action ConnectionClosed;
         event Action<string, string, MessageType> NewTextMessage;
         event Action<string> ParticipantTyping;
+       
         event Action<string> InviteToPlay;
         event Action<string, string> GetResponse;
+        event Action<string, int, int, int, int> ReceiveMove;
 
         Task ConnectAsync();
         //receive list of users and message 
@@ -29,7 +32,9 @@ namespace Client.Services
         Task SendBroadcastMessageAsync(string msg);
         Task SendUnicastMessageAsync(string recepient, string msg);
         Task TypingAsync(string recepient);
+
         Task SendInviteToPlayAsync(string recepient);
         Task SendResponseAsync(string recepient, object response);
+        Task SendMoveAsync(string recepient, int fromR, int fromC, int toR, int toC);
     }
 }

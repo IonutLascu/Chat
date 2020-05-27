@@ -108,6 +108,7 @@
     </ApplicationDefinition>
     <Compile Include="Chess\Bishop.cs" />
     <Compile Include="Chess\CommonPiece.cs" />
+    <Compile Include="Chess\InstanceGame.cs" />
     <Compile Include="Chess\King.cs" />
     <Compile Include="Chess\Knight.cs" />
     <Compile Include="Chess\MainWindow.xaml.cs">
@@ -115,6 +116,7 @@
     </Compile>
     <Compile Include="Chess\Pawn.cs" />
     <Compile Include="Chess\Piece.cs" />
+    <Compile Include="Chess\Player.cs" />
     <Compile Include="Chess\Queen.cs" />
     <Compile Include="Chess\Rook.cs" />
     <Compile Include="Chess\Square.xaml.cs">
