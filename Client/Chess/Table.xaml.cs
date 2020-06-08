@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.IO.Pipes;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -114,9 +115,9 @@ namespace Chess
             };
          */
 
-        private void Add(int i, int j, color c, Piece p)
+        private void Add(int i, int j, Brush b, Piece p)
         {
-            Square sq = new Square(c, p, i, j);
+            Square sq = new Square(b, p, i, j);
             sq.PreviewMouseDown += Square_Click;
             mainTable.Children.Add(sq);
             Grid.SetRow(sq, i);
@@ -158,16 +159,16 @@ namespace Chess
                     if (i % 2 == 0)
                     {
                         if (j % 2 == 0)
-                            Add(i, j, color.eWhite, null);
+                            Add(i, j, Brushes.White, null);
                         else
-                            Add(i, j, color.eBrown, null);
+                            Add(i, j, Brushes.SaddleBrown, null);
                     }
                     else
                     {
                         if (j % 2 == 0)
-                            Add(i, j, color.eBrown, null);
+                            Add(i, j, Brushes.SaddleBrown, null);
                         else
-                            Add(i, j, color.eWhite, null);
+                            Add(i, j, Brushes.White, null);
                     }
 
                 }
@@ -175,7 +176,7 @@ namespace Chess
             }
         }
 
-        public void make_VisibleColorSquare(Square sq)
+        private void make_VisibleColorSquare(Square sq)
         {
             //make visible all possible moves
             List<Tuple<int, int>> possibleMoves = sq.Piece.getPossibleMoves(sq.Row, sq.Column);
@@ -187,9 +188,9 @@ namespace Chess
             }
         }
 
-        public void make_reinitColorSquare(Square sq)
+        private void make_reinitColorSquare(Square sq)
         {
-            //reinitialize color of the square
+            //reinitialize square
             List<Tuple<int, int>> possibleMoves = sq.Piece.getPossibleMoves(sq.Row, sq.Column);
             for (int i = 0; i < possibleMoves.Count(); i++)
             {
@@ -211,7 +212,7 @@ namespace Chess
             sq.Box.Content = null;
         }
 
-        public void isKingInChess(color color)
+        private void isKingInChess(color color)
         {
             if (color == color.eWhite)
                 King.isKingWhiteInChess = false;
@@ -232,16 +233,59 @@ namespace Chess
             }
         }
 
+        private bool isCheckMate(color colorKing)
+        {
+            bool checkMate = true;
+            //check each piece moves with same color as the king
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    Square currentSquare = table[i, j];
+                    if (currentSquare.Piece != null && currentSquare.Piece.Color == colorKing)
+                    {
+                        List<Tuple<int, int>> possibleMoves = currentSquare.Piece.getPossibleMoves(currentSquare.Row, currentSquare.Column);
+                        for (int k = 0; k < possibleMoves.Count; k++)
+                        {
+                            Square nextMove = table[possibleMoves[k].Item1, possibleMoves[k].Item2];
+                            Square keepInMindPiece = nextMove.Clone() as Square;
+                            nextMove.Piece = currentSquare.Piece;
+                            currentSquare.Piece = null;
+                            isKingInChess(colorKing);
+                            if (King.IsKingInChess(colorKing) == false)
+                                checkMate = false;
+
+                            currentSquare.Piece = nextMove.Piece;
+                            nextMove.Piece = keepInMindPiece.Piece;
+
+                            //break the loop if possible move was found
+                            if (checkMate == false)
+                                return false;
+                        }
+                    }
+                }
+                    
+            }
+            return checkMate;
+        }
+
         public bool MovePiece(Moves move)
         {
             Square fromSquare = table[move.FromSquare.Row, move.FromSquare.Column];
             Square toSquare = table[move.ToSquare.Row, move.ToSquare.Column];
 
+            bool isPieceCaptured = false;
+
             //move piece
+            Square keepInMindPiece = toSquare.Clone() as Square;
             fromSquare.Box.Background = fromSquare.ColorSquare;
             make_reinitColorSquare(fromSquare);
             copyContentSquare(fromSquare, toSquare);
-            arrCaputeredPiece.Add(fromSquare);   //save captured piece
+            if (keepInMindPiece.Piece != null)
+            {
+                arrCaputeredPiece.Add(keepInMindPiece);   //save captured piece
+                isPieceCaptured = true;
+            }
             clearContentSquare(ref fromSquare);    //clear selected item
 
             //call this method to know to init static bool from king
@@ -252,11 +296,13 @@ namespace Chess
                 {
                     //the move is not good
                     MessageBox.Show("King in chess!", "", MessageBoxButton.OK);
-                    copyContentSquare(toSquare, getLastPieceCaptured());
-                    clearContentSquare(ref table[toSquare.Row, toSquare.Column]);
+                    copyContentSquare(toSquare, fromSquare);
+                    copyContentSquare(keepInMindPiece, toSquare);
+                    if (isPieceCaptured == true)
+                        arrCaputeredPiece.Remove(keepInMindPiece);
+                    //clearContentSquare(ref table[toSquare.Row, toSquare.Column]);
                     return false;
                 }
-
             }
             else if (isBrownTurn && toSquare.Piece.Color == color.eBrown)
             {
@@ -264,11 +310,14 @@ namespace Chess
                 if (King.isKingBrawnInChess == true)
                 {
                     MessageBox.Show("King in chess!", "", MessageBoxButton.OK);
-                    copyContentSquare(table[toSquare.Row, toSquare.Column], getLastPieceCaptured());
-                    clearContentSquare(ref table[toSquare.Row, toSquare.Column]);
+                    copyContentSquare(toSquare, fromSquare);
+                    copyContentSquare(keepInMindPiece, toSquare);
+                    if (isPieceCaptured == true)
+                        arrCaputeredPiece.Remove(keepInMindPiece);
+                    //clearContentSquare(ref table[toSquare.Row, toSquare.Column]);
                     return false;
                 }
-            }
+                    }
             return true;
         }
 
@@ -291,7 +340,6 @@ namespace Chess
             if (!isWhiteTurn && !isBrownTurn)
                 return;
             Square selectedSquare = sender as Square;
-
             if (selectedSquare.Piece != null && 
                 ((isWhiteTurn && selectedSquare.Piece.Color == color.eWhite) || 
                 (isBrownTurn && selectedSquare.Piece.Color == color.eBrown)))
@@ -315,10 +363,26 @@ namespace Chess
             else if (selectedPiece != null && selectedSquare.Box.Background == Brushes.LightGreen)
             {
                 Moves mv = new Moves(selectedPiece, selectedSquare);
-                if(MovePiece(mv) == true)
-                    arrMoves.Add(mv);
-                selectedPiece = null;
+                if (MovePiece(mv) == true)
+                {
+                    if (isWhiteTurn)
+                    {
+                        isKingInChess(color.eBrown);
+                        if (King.isKingBrawnInChess == true)
+                            if (isCheckMate(color.eBrown) == true)
+                                InstanceGame.IsFinishGame = true;
 
+                    }
+                    else if (isBrownTurn)
+                    {
+                        isKingInChess(color.eWhite);
+                        if (King.isKingWhiteInChess == true)
+                            if (isCheckMate(color.eWhite) == true)
+                                InstanceGame.IsFinishGame = true;
+                    }
+                    arrMoves.Add(mv);
+                    selectedPiece = null;
+                }
             }
         }
     }

@@ -22,7 +22,7 @@ namespace Client.Services
 
         public event Action<string> InviteToPlay;
         public event Action<string, string> GetResponse;
-        public event Action<string, int, int, int, int> ReceiveMove;
+        public event Action<string, int, int, int, int, bool> ReceiveMove;
 
         private IHubProxy hubProxy;
         private HubConnection connection;
@@ -45,7 +45,7 @@ namespace Client.Services
             hubProxy.On<string>("ParticipantTyping", (p) => ParticipantTyping?.Invoke(p));
             hubProxy.On<string>("InviteToPlay", (p) => InviteToPlay?.Invoke(p));
             hubProxy.On<string, string>("GetResponse", (p, q) => GetResponse?.Invoke(p, q));
-            hubProxy.On<string, int, int, int, int>("ReceiveMove", (p1, p2, p3, p4, p5) => ReceiveMove?.Invoke(p1, p2, p3, p4, p5));
+            hubProxy.On<string, int, int, int, int, bool>("ReceiveMove", (p1, p2, p3, p4, p5, p6) => ReceiveMove?.Invoke(p1, p2, p3, p4, p5, p6));
 
             connection.Reconnecting += Reconnecting;
             connection.Reconnected += Reconnected;
@@ -112,9 +112,9 @@ namespace Client.Services
             await hubProxy.Invoke("SendResponseBack", new object[] { recepient, response });
         }
 
-        public async Task SendMoveAsync(string recepient, int fromR, int fromC, int toR, int toC)
+        public async Task SendMoveAsync(string recepient, int fromR, int fromC, int toR, int toC, bool isFinish)
         {
-            await hubProxy.Invoke("SendMoveAsync", new object[] {recepient, fromR, fromC, toR, toC });
+            await hubProxy.Invoke("SendMoveAsync", new object[] {recepient, fromR, fromC, toR, toC, isFinish});
         }
     }
 }

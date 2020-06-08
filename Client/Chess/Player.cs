@@ -11,11 +11,11 @@ namespace Client.Chess
         private string username;
         private bool isWhite = false;
         private bool isBlack = false;
-
+        
         public string Username { get => username; set => username = value; }
         public bool IsBlack { get => isBlack; set => isBlack = value; }
         public bool IsWhite { get => isWhite; set => isWhite = value; }
-
+        
         public Player(string usr) {
             username = usr;
         }

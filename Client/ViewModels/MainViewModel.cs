@@ -586,7 +586,6 @@ namespace Client.ViewModels
                 collection.Last().FromSquare.Column,
                 collection.Last().ToSquare.Row,
                 collection.Last().ToSquare.Column);
-
         }
 
         private void SendMove(int FromRow, int FromColumn, int ToRow, int ToColumn)
@@ -594,7 +593,15 @@ namespace Client.ViewModels
             try
             {
                 var recepient = Table.InstanceGame.Opponent.Username;
-                chatService.SendMoveAsync(recepient, FromRow, FromColumn, ToRow, ToColumn);
+                if (Table.InstanceGame.IsFinishGame == true)
+                {
+                    Application.Current.Dispatcher.Invoke(new Action(() =>
+                    {
+                        dialogService.ShowNotification("You win");
+                        UserState = UserState.Chat;
+                    }));
+                }
+                chatService.SendMoveAsync(recepient, FromRow, FromColumn, ToRow, ToColumn, Table.InstanceGame.IsFinishGame);
                 if (Table.InstanceGame.Player.IsWhite)
                     Table.isWhiteTurn = false;
                 else if(Table.InstanceGame.Player.IsBlack) 
@@ -605,8 +612,17 @@ namespace Client.ViewModels
             }
         }
 
-        private void ReceiveMove(string name, int fromRow, int fromColumn, int toRow, int toColumn)
+        private void ReceiveMove(string name, int fromRow, int fromColumn, int toRow, int toColumn, bool isFinihed)
         {
+
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                if (isFinihed == true)
+                {
+                    dialogService.ShowNotification("You lost");
+                    UserState = UserState.Chat;
+                }
+            }));
             if (Table.InstanceGame.Player.IsWhite)
                 Table.isWhiteTurn = true;
             else if (Table.InstanceGame.Player.IsBlack)

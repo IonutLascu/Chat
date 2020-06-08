@@ -22,7 +22,7 @@ namespace Client.Services
        
         event Action<string> InviteToPlay;
         event Action<string, string> GetResponse;
-        event Action<string, int, int, int, int> ReceiveMove;
+        event Action<string, int, int, int, int, bool> ReceiveMove;
 
         Task ConnectAsync();
         //receive list of users and message 
@@ -35,6 +35,6 @@ namespace Client.Services
 
         Task SendInviteToPlayAsync(string recepient);
         Task SendResponseAsync(string recepient, object response);
-        Task SendMoveAsync(string recepient, int fromR, int fromC, int toR, int toC);
+        Task SendMoveAsync(string recepient, int fromR, int fromC, int toR, int toC, bool isFinish);
     }
 }

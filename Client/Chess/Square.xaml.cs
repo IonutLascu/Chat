@@ -17,18 +17,18 @@ using System.Windows.Shapes;
 
 namespace Chess
 {
-    public partial class Square : UserControl
+    public partial class Square : UserControl, ICloneable
     {
         public Brush ColorSquare { get; set; }
         public Piece Piece { get; set; }
         public int Row { get; set; }
         public int Column { get; set;}
-        public Square(color color, Piece piece, int i, int j) 
+        public Square(Brush colorSquare, Piece piece, int i, int j) 
         {
             InitializeComponent();
             Row = i; Column = j;
             initPiece(piece);
-            Box.Background = ColorSquare =  color == color.eWhite ? Brushes.White : Brushes.SaddleBrown;
+            Box.Background = ColorSquare = colorSquare;
         }
 
         public void initPiece(Piece piece)
@@ -37,6 +37,11 @@ namespace Chess
                 return;
             Piece = piece;
             Box.Content = piece.Img;
+        }
+
+        public object Clone()
+        {
+            return new Square(ColorSquare, Piece, Row, Column);
         }
     }
 }

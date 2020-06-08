@@ -102,6 +102,13 @@ namespace Chess
         {
             return getMovesKing(i, j, color.eBrown);
         }
+        public static bool IsKingInChess(color color)
+        {
+            if (color == color.eBrown)
+                return isKingBrawnInChess;
+            else
+                return isKingWhiteInChess;
+        }
 
     }
 }

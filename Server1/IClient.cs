@@ -17,6 +17,6 @@ namespace Server
         void ParticipantTyping(string sender);
         Task InviteToPlay(string sender);
         void GetResponse(string sender, object response);
-        void ReceiveMove(string sender, int fR, int fC, int tR, int tC);
+        void ReceiveMove(string sender, int fR, int fC, int tR, int tC, bool isFinish);
     }
 }
