@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -68,6 +69,17 @@ namespace Server
                 return ctx.Users
                                 .Where(s => s.Username == username)
                                 .FirstOrDefault<User>();
+            }
+        }
+
+        public static void UpdateUserStatus(User user)
+        {
+            if (user == null)
+                return;
+            using (var db = new UserContext())
+            {
+                db.Entry(user).Property(x => x.isInGame).IsModified = true;
+                db.SaveChanges();
             }
         }
     }

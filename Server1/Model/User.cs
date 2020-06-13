@@ -21,5 +21,6 @@ namespace Server
         [Required]
         [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
+        public bool isInGame { get; set; }
     }
 }

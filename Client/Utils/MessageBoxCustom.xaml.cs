@@ -78,6 +78,7 @@ namespace Client.Utils
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
+            //this.DialogResult = false;
             dispatcherTimer.Stop();
             this.Close();
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Server
 {
@@ -17,6 +18,7 @@ namespace Server
         void ParticipantTyping(string sender);
         Task InviteToPlay(string sender);
         void GetResponse(string sender, object response);
-        void ReceiveMove(string sender, int fR, int fC, int tR, int tC, bool isFinish);
+        void ReceiveMove(string sender, int fR, int fC, int tR, int tC, bool? isFinish);
+        void NotifyIsInGame(string sender, bool isInGame);
     }
 }

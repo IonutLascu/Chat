@@ -188,6 +188,10 @@
     <Compile Include="Migrations\20200329085836_CreateUserDb.designer.cs">
       <DependentUpon>20200329085836_CreateUserDb.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\20200609173828_User.cs" />
+    <Compile Include="Migrations\20200609173828_User.designer.cs">
+      <DependentUpon>20200609173828_User.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\UserContextModelSnapshot.cs" />
     <Compile Include="Model\User.cs" />
     <Compile Include="Program.cs" />

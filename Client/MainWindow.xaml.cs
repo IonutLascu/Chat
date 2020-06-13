@@ -20,6 +20,8 @@ namespace Client
 {
     public partial class MainWindow : Window
     {
+        public object CurrentView { get => currentView.Content; set => currentView.Content = value; }
+
         public MainWindow()
         {
             InitializeComponent();

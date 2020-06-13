@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Chess;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,10 +11,11 @@ namespace Client.Chess
     {
         private Player player;
         private Player opponent;
-        private bool isFinishGame = false;
+        private bool? isFinishedGame = null;
+        
         public Player Player { get => player; set => player = value; }
         public Player Opponent { get => opponent; set => opponent = value; }
-        public bool IsFinishGame { get => isFinishGame; set => isFinishGame = value; }
+        public bool? IsFinishGame { get => isFinishedGame; set => isFinishedGame = value; }
 
         public InstanceGame(Player pl, Player op)
         {

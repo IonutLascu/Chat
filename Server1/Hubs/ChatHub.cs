@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Server
 {
@@ -74,7 +75,7 @@ namespace Server
             {
                 Console.WriteLine($"++ {name} logged in");
                 List<User> users = new List<User>(ChatClients.Values);
-                User newUser = new User { UserId = Context.ConnectionId, Username = name, Password = password };
+                User newUser = new User { UserId = Context.ConnectionId, Username = name, Password = password, isInGame = false};
                 var added = ChatClients.TryAdd(name, newUser);
                 if (!added)
                     return null;
@@ -151,7 +152,7 @@ namespace Server
             Clients.Client(client.UserId).GetResponse(sender, response);
         }
 
-        public async Task SendMoveAsync(string recepient, int fromR, int fromC, int toR, int toC, bool isFinishGame)
+        public async Task SendMoveAsync(string recepient, int fromR, int fromC, int toR, int toC, bool? isFinishGame)
         {
             var sender = Clients.CallerState.UserName;
 
@@ -161,5 +162,15 @@ namespace Server
             Clients.Client(client.UserId).ReceiveMove(sender, fromR, fromC, toR, toC, isFinishGame);
         }
 
+        public async Task NotifyAllAsync(string recepient, bool isInGame)
+        {
+            var sender = Clients.CallerState.UserName;
+
+            User currentUser = ChatClients[sender];
+            currentUser.isInGame = isInGame;
+            ChatClients[sender] = currentUser;
+
+            Clients.All.NotifyIsInGame(sender, isInGame);
+        }
     }
 }

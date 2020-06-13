@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Client.Models
 {
     public class Participant : ViewModel
-    {
+    { 
         public string Username { get; set; }
         public ObservableCollection<ChatMessage> Chatter { get; set; }
 
@@ -34,6 +34,21 @@ namespace Client.Models
             set { _isTyping = value; OnPropertyChanged(); }
         }
 
+        private bool _isInGame;
+        public bool IsInGame
+        {
+            get
+            {
+                return _isInGame;
+            }
+            set
+            {
+                _isInGame = value;
+                OnPropertyChanged();
+            }
+
+        }
+        
         public Participant() { Chatter = new ObservableCollection<ChatMessage>(); }
     }
 }

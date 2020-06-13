@@ -127,6 +127,10 @@
                     <materialDesign:PackIcon Name="NewMessageIcon" Grid.Column="3" SnapsToDevicePixels="True"
                                              VerticalAlignment="Center" HorizontalAlignment="Center"
                                              Kind="MessageReplyText" Opacity="0.7" Visibility="Hidden"/>
+                    <!--Play Icon -->
+                    <materialDesign:PackIcon Name="IsInGameIcon" Grid.Column="3" SnapsToDevicePixels="True"
+                                             VerticalAlignment="Center" HorizontalAlignment="Center"
+                                             Kind="Games" Opacity="0.7" Visibility="Hidden"/>
                     <!--Typing icon-->
                     <materialDesign:PackIcon Name="TypingIcon" Grid.Column="3" SnapsToDevicePixels="True"
                                              VerticalAlignment="Center" HorizontalAlignment="Center"
@@ -162,6 +166,9 @@
                 <DataTrigger Binding="{Binding IsTyping}" Value="True">
                     <Setter TargetName="NewMessageIcon" Property="Visibility" Value="Hidden"/>
                     <Setter TargetName="TypingIcon" Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsInGame}" Value="True">
+                    <Setter TargetName="IsInGameIcon" Property="Visibility" Value="Visible"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=IsSelected,
                     RelativeSource={RelativeSource FindAncestor, AncestorType=ListBoxItem}}" Value="true">

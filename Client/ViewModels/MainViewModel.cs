@@ -20,6 +20,7 @@ using System.Windows.Threading;
 using Chess;
 using System.Collections.Specialized;
 using Client.Chess;
+using System.Linq.Expressions;
 
 namespace Client.ViewModels
 {
@@ -30,6 +31,7 @@ namespace Client.ViewModels
         private TaskFactory ctxTaskFactory;
 
         #region Common Bindings
+
         private Visibility _visibilityTitle;
         public Visibility VisibilityTitle
         {
@@ -297,7 +299,7 @@ namespace Client.ViewModels
                 result = await chatService.LoginAsync(_userName, _password);
                 if (result.Item1 != null)
                 {
-                    result.Item1.ForEach(u => Participants.Add(new Participant { Username = u.Username }));
+                    result.Item1.ForEach(u => Participants.Add(new Participant { Username = u.Username, IsInGame = u.isInGame }));
                     UserState = UserState.Chat;
                     VisibilityTitle = Visibility.Collapsed;
                     IsLoggedIn = true;
@@ -345,7 +347,7 @@ namespace Client.ViewModels
 
         private bool CanSendInviteToPlay()
         {
-            return (IsConnected && _selectedParticipant != null && _selectedParticipant.IsLoggedIn);
+            return (IsConnected && _selectedParticipant != null && _selectedParticipant.IsLoggedIn && _selectedParticipant.IsInGame != true);
         }
 
         private async Task SendResponse(string name, object response)
@@ -354,7 +356,8 @@ namespace Client.ViewModels
             {
                 await chatService.SendResponseAsync(name, response);
             }
-            catch (Exception) { 
+            catch (Exception)
+            {
                 //to do
             }
         }
@@ -484,6 +487,7 @@ namespace Client.ViewModels
                 ctxTaskFactory.StartNew(() => Participants.Add(new Participant
                 {
                     Username = u.Username,
+                    IsInGame = u.isInGame
                 })).Wait();
             }
         }
@@ -491,13 +495,15 @@ namespace Client.ViewModels
         private void ParticipantDisconnection(string name)
         {
             var person = Participants.Where((p) => string.Equals(p.Username, name)).FirstOrDefault();
-            if (person != null) person.IsLoggedIn = false;
+            if (person != null)
+                person.IsLoggedIn = false;
         }
 
         private void ParticipantReconnection(string name)
         {
             var person = Participants.Where((p) => string.Equals(p.Username, name)).FirstOrDefault();
-            if (person != null) person.IsLoggedIn = true;
+            if (person != null)
+                person.IsLoggedIn = true;
         }
 
         private void Reconnecting()
@@ -517,7 +523,8 @@ namespace Client.ViewModels
         private async void Disconnected()
         {
             var connectionTask = chatService.ConnectAsync();
-            await connectionTask.ContinueWith(t => {
+            await connectionTask.ContinueWith(t =>
+            {
                 if (!t.IsFaulted)
                 {
                     IsConnected = true;
@@ -536,6 +543,20 @@ namespace Client.ViewModels
                 Observable.Timer(TimeSpan.FromMilliseconds(1500)).Subscribe(t => person.IsTyping = false);
             }
         }
+        /// <summary>
+        /// Game
+        /// </summary>
+        private string titleTurn = "It's white turn";
+        public string TitleTurn
+        {
+            get => titleTurn;
+            set
+            {
+                titleTurn = value;
+                OnPropertyChanged();
+            }
+
+        }
 
         private async void InviteToPlay(string name)
         {
@@ -546,14 +567,17 @@ namespace Client.ViewModels
                 result = dialogService.ShowConfirmationRequest($"Player {name} wanna play with you", "", true);
             }));
 
+
             //start game
             if (true == result)
             {
                 UserState = UserState.InGame;
                 Table.InstanceGame = new InstanceGame(new Player(_userName) { IsWhite = true, IsBlack = false },
-                                                       new Player(name) { IsBlack = true , IsWhite = false}) ;
-                Table.isWhiteTurn = true;
-                Table.arrMoves.CollectionChanged += CollectionWasChanged;
+                                                        new Player(name) { IsBlack = true, IsWhite = false });
+                Table.ArrMoves.CollectionChanged += CollectionWasChanged;
+                Table.IsWhiteTurn = true;
+                chatService.NotifyAllAsync(name, true);
+
             }
 
             //there was also a problem "How to send message to the Hub??? because signalR can't has return type only void or Task"
@@ -566,16 +590,27 @@ namespace Client.ViewModels
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
                 if (Convert.ToBoolean(response) == false)
-                dialogService.ShowNotification($"Player {name} does not want to play");
+                    dialogService.ShowNotification($"Player {name} does not want to play");
 
-            else if (Convert.ToBoolean(response) == true)
-                dialogService.ShowNotification($"Player {name} accepted request");
+                else if (Convert.ToBoolean(response) == true)
+                {
+                    //can't wait because timer was started
+                    //dialogService.ShowNotification($"Player {name} accepted request", "", true);
 
-                UserState = UserState.InGame;
-                Table.InstanceGame = new InstanceGame(new Player(_userName) { IsBlack = true, IsWhite = false }, 
-                                                        new Player(name) { IsWhite = true, IsBlack = false }) ;
-                Table.arrMoves.CollectionChanged += CollectionWasChanged;
+                    UserState = UserState.InGame;
+                    chatService.NotifyAllAsync(name, true);
+                    Table.InstanceGame = new InstanceGame(new Player(_userName) { IsBlack = true, IsWhite = false },
+                                                            new Player(name) { IsWhite = true, IsBlack = false });
+                    Table.ArrMoves.CollectionChanged += CollectionWasChanged;
+                }
             }));
+        }
+
+        private void NotifyIsInGame(string name, bool isInGame)
+        {
+            var user = Participants.Where((p) => string.Equals(p.Username, name)).FirstOrDefault();
+            if (user != null)
+                user.IsInGame = isInGame;
         }
 
         private void CollectionWasChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -592,42 +627,80 @@ namespace Client.ViewModels
         {
             try
             {
-                var recepient = Table.InstanceGame.Opponent.Username;
-                if (Table.InstanceGame.IsFinishGame == true)
+                Application.Current.Dispatcher.Invoke(new Action(() =>
                 {
-                    Application.Current.Dispatcher.Invoke(new Action(() =>
+                    Table.InstanceGame.Player.StpWatch.PauseTimer();
+
+                    var recepient = Table.InstanceGame.Opponent.Username;
+                    if (Table.InstanceGame.IsFinishGame == true)
                     {
-                        dialogService.ShowNotification("You win");
+                        dialogService.ShowNotification("You win", "", true);
+                        chatService.NotifyAllAsync(recepient, false);
                         UserState = UserState.Chat;
-                    }));
-                }
-                chatService.SendMoveAsync(recepient, FromRow, FromColumn, ToRow, ToColumn, Table.InstanceGame.IsFinishGame);
-                if (Table.InstanceGame.Player.IsWhite)
-                    Table.isWhiteTurn = false;
-                else if(Table.InstanceGame.Player.IsBlack) 
-                    Table.isBrownTurn = false;
+                    }
+                    else if(Table.InstanceGame.IsFinishGame == false)
+                    {
+                        dialogService.ShowNotification("You lost", "", true);
+                        chatService.NotifyAllAsync(recepient, false);
+                        UserState = UserState.Chat;
+                    }
+                    chatService.SendMoveAsync(recepient, FromRow, FromColumn, ToRow, ToColumn, Table.InstanceGame.IsFinishGame);
+                    Table.InstanceGame.Opponent.StpWatch.StartTimer();
+                    if (Table.InstanceGame.Player.IsWhite)
+                    {
+                        Table.IsWhiteTurn = false;
+                        TitleTurn = "It's black turn...";
+                    }
+                    else if (Table.InstanceGame.Player.IsBlack)
+                    {
+                        Table.IsBrownTurn = false;
+                        TitleTurn = "It's white turn...";
+                    }
+                }));
             }
-            catch (Exception) { 
+            catch (Exception)
+            {
                 //TO DO
             }
         }
 
-        private void ReceiveMove(string name, int fromRow, int fromColumn, int toRow, int toColumn, bool isFinihed)
+        private void ReceiveMove(string name, int fromRow, int fromColumn, int toRow, int toColumn, bool? isFinihed)
         {
-
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
+                Table.InstanceGame.Opponent.StpWatch.PauseTimer();
+                //opponent player won
                 if (isFinihed == true)
                 {
-                    dialogService.ShowNotification("You lost");
+                    dialogService.ShowNotification("You lost", "", true);
+                    //back to chat
                     UserState = UserState.Chat;
+                    //notify all player game is finish
+                    chatService.NotifyAllAsync(name, false);
                 }
+                //opponenet player lose
+                else if (isFinihed == false)
+                {
+                    dialogService.ShowNotification("You win", "", true);
+                    //back to chat
+                    UserState = UserState.Chat;
+                    //notify all player game is finish
+                    chatService.NotifyAllAsync(name, false);
+                }
+                if (Table.InstanceGame.Player.IsWhite)
+                {
+                    Table.IsWhiteTurn = true;
+                    TitleTurn = "It's white turn...";
+                }
+                else if (Table.InstanceGame.Player.IsBlack)
+                {
+                    Table.IsBrownTurn = true;
+                    TitleTurn = "It's black turn...";
+                }
+                Table.ArrOponentMoves.Add(new Moves(fromRow, fromColumn, toRow, toColumn));
+                Table.InstanceGame.Player.StpWatch.StartTimer();
             }));
-            if (Table.InstanceGame.Player.IsWhite)
-                Table.isWhiteTurn = true;
-            else if (Table.InstanceGame.Player.IsBlack)
-                Table.isBrownTurn = true;
-            Table.arrOponentMoves.Add(new Moves(fromRow, fromColumn, toRow, toColumn));
+
         }
 
         #endregion
@@ -649,7 +722,7 @@ namespace Client.ViewModels
             chatSvc.InviteToPlay += InviteToPlay;
             chatSvc.GetResponse += GetResponse;
             chatSvc.ReceiveMove += ReceiveMove;
-            
+            chatSvc.NotifyIsInGame += NotifyIsInGame;
 
             ctxTaskFactory = new TaskFactory(TaskScheduler.FromCurrentSynchronizationContext());
         }
