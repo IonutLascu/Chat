@@ -4,8 +4,17 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:Chess"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:Converters="clr-namespace:MaterialDesignThemes.Wpf.Converters;assembly=MaterialDesignThemes.Wpf"          
              mc:Ignorable="d" 
              d:DesignHeight="700" d:DesignWidth="700">
+
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding LoadedTableCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="2*"/>
@@ -16,15 +25,18 @@
             <ColumnDefinition Width="7*"/>
             <ColumnDefinition Width="1.5*"/>
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="0" Grid.ColumnSpan="1" VerticalAlignment="Center" HorizontalAlignment="Left">
+        <StackPanel Grid.Column="0" Grid.ColumnSpan="1" VerticalAlignment="Center" HorizontalAlignment="Left" Orientation="Vertical">
+            <Label x:Name="lblNamePlayer" FontSize="30"/>
             <local:Cronometer x:Name="swPlayerTimer"/>
-        </Grid>
-        <Grid Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Label Content="{Binding TitleTurn}" FontSize="30"/>
-        </Grid>
-        <Grid Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center">
+        </StackPanel>
+        <materialDesign:ColorZone Mode="PrimaryMid" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="3">
+            <Label x:Name="TitleTurn" Content="{Binding TitleTurn}" FontSize="30"/>
+        </materialDesign:ColorZone>
+
+        <StackPanel Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Vertical">
+            <Label x:Name="lblNameOpponent" FontSize="30"/>
             <local:Cronometer x:Name="swOpponentTimer"/>
-        </Grid>
+        </StackPanel>
         <Grid Width="540" Height="540" Grid.Column="1" Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"/>
@@ -58,7 +70,7 @@
             <Label Grid.Column="6" Content="F" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
             <Label Grid.Column="7" Content="G" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
             <Label Grid.Column="8" Content="H" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
-           
+
             <Label Grid.Row="10" Grid.Column="1" Content="A" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
             <Label Grid.Row="10" Grid.Column="2" Content="B" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
             <Label Grid.Row="10" Grid.Column="3" Content="C" FontSize="14" FontWeight="UltraBold" HorizontalAlignment="Center" />
@@ -76,7 +88,7 @@
             <Label Grid.Column="10" Grid.Row="6" Content="6" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
             <Label Grid.Column="10" Grid.Row="7" Content="7" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
             <Label Grid.Column="10" Grid.Row="8" Content="8" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
-            
+
             <Label Grid.Column="0" Grid.Row="1" Content="1" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
             <Label Grid.Column="0" Grid.Row="2" Content="2" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />
             <Label Grid.Column="0" Grid.Row="3" Content="3" FontSize="14" FontWeight="UltraBold" VerticalAlignment="Center" />

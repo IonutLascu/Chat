@@ -31,7 +31,8 @@ namespace Client.Utils
             //auto close window after x seconds
             if (autoClose == true)
             {
-                dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
+                dispatcherTimer.Tick -= dispatcherTimer_Tick;
+                dispatcherTimer.Tick += dispatcherTimer_Tick;
                 dispatcherTimer.Interval = new TimeSpan(0, 0, 5);
                 dispatcherTimer.Start();
             }

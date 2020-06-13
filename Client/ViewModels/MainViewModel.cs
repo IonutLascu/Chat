@@ -546,6 +546,20 @@ namespace Client.ViewModels
         /// <summary>
         /// Game
         /// </summary>
+        private ICommand _loadedTableCommand;
+        public ICommand LoadedTableCommand
+        {
+            get
+            {
+                return _loadedTableCommand ?? (_loadedTableCommand = new Command((o) => InitTable()));
+            }
+        }
+        private void InitTable()
+        {
+            Table.ArrMoves.CollectionChanged -= CollectionWasChanged;
+            Table.ArrMoves.CollectionChanged += CollectionWasChanged;
+        }
+
         private string titleTurn = "It's white turn";
         public string TitleTurn
         {
@@ -574,9 +588,7 @@ namespace Client.ViewModels
                 UserState = UserState.InGame;
                 Table.InstanceGame = new InstanceGame(new Player(_userName) { IsWhite = true, IsBlack = false },
                                                         new Player(name) { IsBlack = true, IsWhite = false });
-                Table.ArrMoves.CollectionChanged += CollectionWasChanged;
-                Table.IsWhiteTurn = true;
-                chatService.NotifyAllAsync(name, true);
+                await chatService.NotifyAllAsync(name, true);
 
             }
 
@@ -601,7 +613,6 @@ namespace Client.ViewModels
                     chatService.NotifyAllAsync(name, true);
                     Table.InstanceGame = new InstanceGame(new Player(_userName) { IsBlack = true, IsWhite = false },
                                                             new Player(name) { IsWhite = true, IsBlack = false });
-                    Table.ArrMoves.CollectionChanged += CollectionWasChanged;
                 }
             }));
         }
@@ -627,34 +638,26 @@ namespace Client.ViewModels
         {
             try
             {
-                Application.Current.Dispatcher.Invoke(new Action(() =>
+                var app = Application.Current.MainWindow.Content;
+                Application.Current.Dispatcher.Invoke(new Action(async () => 
                 {
-                    Table.InstanceGame.Player.StpWatch.PauseTimer();
-
                     var recepient = Table.InstanceGame.Opponent.Username;
+                    await chatService.SendMoveAsync(recepient, FromRow, FromColumn, ToRow, ToColumn, Table.InstanceGame.IsFinishGame);
+                    Table.InstanceGame.Player.StpWatch.PauseTimer();
+                    Table.InstanceGame.Opponent.StpWatch.StartTimer();
                     if (Table.InstanceGame.IsFinishGame == true)
                     {
                         dialogService.ShowNotification("You win", "", true);
                         chatService.NotifyAllAsync(recepient, false);
                         UserState = UserState.Chat;
+                        return;
                     }
-                    else if(Table.InstanceGame.IsFinishGame == false)
+                    else if (Table.InstanceGame.IsFinishGame == false)
                     {
                         dialogService.ShowNotification("You lost", "", true);
                         chatService.NotifyAllAsync(recepient, false);
                         UserState = UserState.Chat;
-                    }
-                    chatService.SendMoveAsync(recepient, FromRow, FromColumn, ToRow, ToColumn, Table.InstanceGame.IsFinishGame);
-                    Table.InstanceGame.Opponent.StpWatch.StartTimer();
-                    if (Table.InstanceGame.Player.IsWhite)
-                    {
-                        Table.IsWhiteTurn = false;
-                        TitleTurn = "It's black turn...";
-                    }
-                    else if (Table.InstanceGame.Player.IsBlack)
-                    {
-                        Table.IsBrownTurn = false;
-                        TitleTurn = "It's white turn...";
+                        return;
                     }
                 }));
             }
@@ -677,6 +680,7 @@ namespace Client.ViewModels
                     UserState = UserState.Chat;
                     //notify all player game is finish
                     chatService.NotifyAllAsync(name, false);
+                    return;
                 }
                 //opponenet player lose
                 else if (isFinihed == false)
@@ -686,16 +690,7 @@ namespace Client.ViewModels
                     UserState = UserState.Chat;
                     //notify all player game is finish
                     chatService.NotifyAllAsync(name, false);
-                }
-                if (Table.InstanceGame.Player.IsWhite)
-                {
-                    Table.IsWhiteTurn = true;
-                    TitleTurn = "It's white turn...";
-                }
-                else if (Table.InstanceGame.Player.IsBlack)
-                {
-                    Table.IsBrownTurn = true;
-                    TitleTurn = "It's black turn...";
+                    return;
                 }
                 Table.ArrOponentMoves.Add(new Moves(fromRow, fromColumn, toRow, toColumn));
                 Table.InstanceGame.Player.StpWatch.StartTimer();

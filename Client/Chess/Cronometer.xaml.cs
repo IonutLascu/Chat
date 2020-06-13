@@ -23,7 +23,7 @@ namespace Chess
     public partial class Cronometer : UserControl
     {
         public event EventHandler timeElapsed;
-        private int time = 300;
+        private int time = 10;
         private DispatcherTimer Timer;
 
         public int Time { get => time;}
@@ -31,8 +31,10 @@ namespace Chess
         public Cronometer()
         {
             InitializeComponent();
+            time = 10;
             Timer = new DispatcherTimer();
             Timer.Interval = new TimeSpan(0, 0, 1);
+            Timer.Tick -= TimerRunning;
             Timer.Tick += TimerRunning;
             clocktxt.Text = string.Format("00:0{0}:{1}", time / 60, time % 60);
         }
@@ -49,6 +51,7 @@ namespace Chess
             else
             {
                 timeElapsed?.Invoke(this, e);
+                Timer.Stop();
             }
         }
 

@@ -1,24 +1,14 @@
 ﻿using Client.Chess;
-using ControlzEx.Standard;
+using Client.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.ComponentModel;
-using System.IO.Pipes;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Chess
 {
@@ -47,6 +37,7 @@ namespace Chess
 
         public Square FromSquare { get => fromSquare; set => fromSquare = value; }
         public Square ToSquare { get => toSquare; set => toSquare = value; }
+
     }
 
     public partial class Table : UserControl
@@ -54,11 +45,8 @@ namespace Chess
         static public Square[,] table = new Square[8, 8];
         private Square selectedPiece = null;
 
-        private static bool isWhiteTurn = false;
-        private static bool isBrownTurn = false;
-
-        public static bool IsWhiteTurn { get => isWhiteTurn; set => isWhiteTurn = value; }
-        public static bool IsBrownTurn { get => isBrownTurn; set => isBrownTurn = value; }
+        private bool isWhiteTurn = false;
+        private bool isBrownTurn = false;
 
         private static ObservableCollection<Square> arrCaputeredPiece = new ObservableCollection<Square>();
         public static ObservableCollection<Square> ArrCaputeredPiece { get => arrCaputeredPiece; set => arrCaputeredPiece = value; }
@@ -101,11 +89,27 @@ namespace Chess
         {
             InitializeComponent();
 
+            arrMoves = new ObservableCollection<Moves>();
+            arrOponentMoves = new ObservableCollection<Moves>();
+            arrCaputeredPiece = new ObservableCollection<Square>();
+            
+            if(instanceGame.Player.IsWhite == true)
+                isWhiteTurn = true;
+
+            ArrOponentMoves.CollectionChanged -= UpdateTable;
             ArrOponentMoves.CollectionChanged += UpdateTable;
+
+            lblNamePlayer.Content = instanceGame.Player.Username;
+            lblNameOpponent.Content = instanceGame.Opponent.Username;
+
             initTableSqare();
             initTablePiece();
             instanceGame.Player.StpWatch = swPlayerTimer;
             instanceGame.Opponent.StpWatch = swOpponentTimer;
+
+            swPlayerTimer.timeElapsed -= TimeElapsed;
+            swPlayerTimer.timeElapsed += TimeElapsed;
+
             if (isWhiteTurn == true)
                 swPlayerTimer.StartTimer();
             else
@@ -138,11 +142,12 @@ namespace Chess
         private void Add(int i, int j, Brush b, Piece p)
         {
             Square sq = new Square(b, p, i, j);
+            sq.PreviewMouseDown -= Square_Click;
             sq.PreviewMouseDown += Square_Click;
             mainTable.Children.Add(sq);
             Grid.SetRow(sq, i);
             Grid.SetColumn(sq, j);
-            table[i, j] = sq; 
+            table[i, j] = sq;
         }
 
         private void initMainPiece(int index, color c)
@@ -169,12 +174,12 @@ namespace Chess
 
 
         }
-        
+
         private void initTableSqare()
         {
-            for(int i = 0; i < 8; i++)
+            for (int i = 0; i < 8; i++)
             {
-                for(int j = 0; j < 8; j++)
+                for (int j = 0; j < 8; j++)
                 {
                     if (i % 2 == 0)
                     {
@@ -192,7 +197,7 @@ namespace Chess
                     }
 
                 }
-                
+
             }
         }
 
@@ -284,7 +289,7 @@ namespace Chess
                         }
                     }
                 }
-                    
+
             }
             return checkMate;
         }
@@ -309,7 +314,7 @@ namespace Chess
             clearContentSquare(ref fromSquare);    //clear selected item
 
             //call this method to know to init static bool from king
-            if (IsWhiteTurn && toSquare.Piece.Color == color.eWhite)
+            if (isWhiteTurn && toSquare.Piece != null && toSquare.Piece.Color == color.eWhite)
             {
                 isKingInChess(color.eWhite);
                 if (King.isKingWhiteInChess == true)
@@ -324,7 +329,7 @@ namespace Chess
                     return false;
                 }
             }
-            else if (IsBrownTurn && toSquare.Piece.Color == color.eBrown)
+            else if (isBrownTurn && toSquare.Piece != null && toSquare.Piece.Color == color.eBrown)
             {
                 isKingInChess(color.eBrown);
                 if (King.isKingBrawnInChess == true)
@@ -337,17 +342,29 @@ namespace Chess
                     //clearContentSquare(ref table[toSquare.Row, toSquare.Column]);
                     return false;
                 }
-                    }
+            }
             return true;
         }
 
         private void UpdateTable(object sender, NotifyCollectionChangedEventArgs e)
         {
-           Application.Current.Dispatcher.Invoke(() =>
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                ObservableCollection<Moves> collection = sender as ObservableCollection<Moves>;
-                MovePiece(collection.Last());
+                 ObservableCollection<Moves> collection = sender as ObservableCollection<Moves>;
+                 MovePiece(collection.Last());
             });
+            if (InstanceGame.Player.IsWhite)
+            {
+                isWhiteTurn = true;
+                isBrownTurn = false;
+                TitleTurn.Content= "It's white turn...";
+            }
+            else if (InstanceGame.Player.IsBlack)
+            {
+                isBrownTurn = true;
+                isWhiteTurn = false;
+                TitleTurn.Content = "It's black turn...";
+            }
         }
 
         Square getLastPieceCaptured()
@@ -357,17 +374,17 @@ namespace Chess
 
         void Square_Click(object sender, RoutedEventArgs e)
         {
-            if (!IsWhiteTurn && !IsBrownTurn)
+            if (!isWhiteTurn && !isBrownTurn)
                 return;
             Square selectedSquare = sender as Square;
-            if (selectedSquare.Piece != null && 
-                ((IsWhiteTurn && selectedSquare.Piece.Color == color.eWhite) || 
-                (IsBrownTurn && selectedSquare.Piece.Color == color.eBrown)))
+            if (selectedSquare.Piece != null &&
+                ((isWhiteTurn && selectedSquare.Piece.Color == color.eWhite) ||
+                (isBrownTurn && selectedSquare.Piece.Color == color.eBrown)))
             {
-                if (selectedSquare.Piece.Color == color.eWhite && IsBrownTurn)
+                if (selectedSquare.Piece.Color == color.eWhite && isBrownTurn)
                     return;
 
-                if (selectedSquare.Piece.Color == color.eBrown && IsWhiteTurn)
+                if (selectedSquare.Piece.Color == color.eBrown && isWhiteTurn)
                     return;
 
                 if (selectedPiece != null)
@@ -385,7 +402,7 @@ namespace Chess
                 Moves mv = new Moves(selectedPiece, selectedSquare);
                 if (MovePiece(mv) == true)
                 {
-                    if (IsWhiteTurn)
+                    if (isWhiteTurn)
                     {
                         isKingInChess(color.eBrown);
                         if (King.isKingBrawnInChess == true)
@@ -393,17 +410,37 @@ namespace Chess
                                 InstanceGame.IsFinishGame = true;
 
                     }
-                    else if (IsBrownTurn)
+                    else if (isBrownTurn)
                     {
                         isKingInChess(color.eWhite);
                         if (King.isKingWhiteInChess == true)
                             if (isCheckMate(color.eWhite) == true)
                                 InstanceGame.IsFinishGame = true;
                     }
+                    if (InstanceGame.Player.IsWhite)
+                    {
+                        isWhiteTurn= false;
+                        TitleTurn.Content = "It's black turn...";
+                    }
+                    else if (Table.InstanceGame.Player.IsBlack)
+                    {
+                        isBrownTurn = false;
+                        TitleTurn.Content = "It's white turn...";
+                    }
                     ArrMoves.Add(mv);
                     selectedPiece = null;
                 }
             }
         }
+
+        private void TimeElapsed(object sender, EventArgs e)
+        {
+            isWhiteTurn = false;
+            isBrownTurn = false;
+
+            instanceGame.IsFinishGame = false;
+            arrMoves.Add(new Moves(0, 0, 0, 0));
+        }
+
     }
 }
