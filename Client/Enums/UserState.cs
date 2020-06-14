@@ -8,9 +8,8 @@ namespace Client.Enums
 {
     public enum UserState
     {
-        Login,
+        Lobby,
         Chat,
-        Register,
         InGame,
     }
 }

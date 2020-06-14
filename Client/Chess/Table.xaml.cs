@@ -6,9 +6,13 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Chess
 {
@@ -45,11 +49,14 @@ namespace Chess
         static public Square[,] table = new Square[8, 8];
         private Square selectedPiece = null;
 
+        private bool canChangePiece = false;
+        private Moves lastMove;
+
         private bool isWhiteTurn = false;
         private bool isBrownTurn = false;
 
-        private static ObservableCollection<Square> arrCaputeredPiece = new ObservableCollection<Square>();
-        public static ObservableCollection<Square> ArrCaputeredPiece { get => arrCaputeredPiece; set => arrCaputeredPiece = value; }
+        private ObservableCollection<Square> arrCaputeredPiece = new ObservableCollection<Square>();
+        public ObservableCollection<Square> ArrCaputeredPiece { get => arrCaputeredPiece; set => arrCaputeredPiece = value; }
 
         private static ObservableCollection<Moves> arrMoves = new ObservableCollection<Moves>();
         public static ObservableCollection<Moves> ArrMoves { get => arrMoves; set => arrMoves = value; }
@@ -92,8 +99,11 @@ namespace Chess
             arrMoves = new ObservableCollection<Moves>();
             arrOponentMoves = new ObservableCollection<Moves>();
             arrCaputeredPiece = new ObservableCollection<Square>();
-            
-            if(instanceGame.Player.IsWhite == true)
+
+            arrCaputeredPiece.CollectionChanged -= SavePieceInList;
+            arrCaputeredPiece.CollectionChanged += SavePieceInList;
+
+            if (instanceGame.Player.IsWhite == true)
                 isWhiteTurn = true;
 
             ArrOponentMoves.CollectionChanged -= UpdateTable;
@@ -114,6 +124,43 @@ namespace Chess
                 swPlayerTimer.StartTimer();
             else
                 swOpponentTimer.StartTimer();
+        }
+
+        private void SavePieceInList(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            var tempSquare = (sender as ObservableCollection<Square>).Last().Clone() as Square;
+            var capturedPiece = new Square(Brushes.White, tempSquare.Piece, -1, -1);
+            if (isWhiteTurn && instanceGame.Player.IsWhite && capturedPiece.Piece.Color == color.eBrown)
+                if (e.Action == NotifyCollectionChangedAction.Add)
+                    grdOpponentCapturedPieces.Children.Add(capturedPiece);
+                else
+                    grdOpponentCapturedPieces.Children.Remove(capturedPiece);
+            else if (isBrownTurn && instanceGame.Player.IsBlack && capturedPiece.Piece.Color == color.eWhite)
+                if (e.Action == NotifyCollectionChangedAction.Add)
+                    grdOpponentCapturedPieces.Children.Add(capturedPiece);
+                else
+                    grdOpponentCapturedPieces.Children.Remove(capturedPiece);
+            else if (isBrownTurn && instanceGame.Player.IsBlack && capturedPiece.Piece.Color == color.eBrown)
+                if (e.Action == NotifyCollectionChangedAction.Add)
+                    grdPlayerCapturedPieces.Children.Add(capturedPiece);
+                else
+                    grdPlayerCapturedPieces.Children.Remove(capturedPiece);
+            else if (isWhiteTurn && instanceGame.Player.IsWhite && capturedPiece.Piece.Color == color.eWhite)
+                if (e.Action == NotifyCollectionChangedAction.Add)
+                    grdPlayerCapturedPieces.Children.Add(capturedPiece);
+                else
+                    grdPlayerCapturedPieces.Children.Remove(capturedPiece);
+
+        }
+
+        private void RecoverPiece(object sender, RoutedEventArgs e)
+        {
+            var pieceRecovered = (sender as Square);
+            table[lastMove.ToSquare.Row, lastMove.ToSquare.Column].Piece = pieceRecovered.Piece;
+            table[lastMove.ToSquare.Row, lastMove.ToSquare.Column].Box.Content = pieceRecovered.Box.Content;
+            selectedPiece = null;
+            canChangePiece = false;
+            ArrMoves.Add(lastMove);
         }
 
         /*
@@ -172,8 +219,30 @@ namespace Chess
             initMainPiece(0, color.eBrown);
             initMainPiece(7, color.eWhite);
 
+            //fill recover piece
+            if (instanceGame.Player.IsWhite)
+            {
+                grdRecoverPiece.Children.Add(new Square(Brushes.Gold, getPieceInstance(piece.eBishop, color.eWhite), -1, -1));
+                grdRecoverPiece.Children.Add(new Square(Brushes.Gold, getPieceInstance(piece.eKnight, color.eWhite), -1, -1));
+                grdRecoverPiece.Children.Add(new Square(Brushes.Gold, getPieceInstance(piece.eQueen, color.eWhite), -1, -1));
+                grdRecoverPiece.Children.Add(new Square(Brushes.Gold, getPieceInstance(piece.eRook, color.eWhite), -1, -1));
+                grdRecoverPiece.VerticalAlignment = VerticalAlignment.Top;
+            }
+            else if (instanceGame.Player.IsBlack)
+            {
+                grdRecoverPiece.Children.Add(new Square(Brushes.Gold, getPieceInstance(piece.eBishop, color.eBrown), -1, -1));
+                grdRecoverPiece.Children.Add(new Square(Brushes.Gold, getPieceInstance(piece.eKnight, color.eBrown), -1, -1));
+                grdRecoverPiece.Children.Add(new Square(Brushes.Gold, getPieceInstance(piece.eQueen, color.eBrown), -1, -1));
+                grdRecoverPiece.Children.Add(new Square(Brushes.Gold, getPieceInstance(piece.eRook, color.eBrown), -1, -1));
+            }
 
+            foreach (Square sq in grdRecoverPiece.Children)
+            {
+                sq.PreviewMouseDown -= RecoverPiece;
+                sq.PreviewMouseDown += RecoverPiece;
+            }
         }
+
 
         private void initTableSqare()
         {
@@ -299,6 +368,22 @@ namespace Chess
             Square fromSquare = table[move.FromSquare.Row, move.FromSquare.Column];
             Square toSquare = table[move.ToSquare.Row, move.ToSquare.Column];
 
+            //current piece is pawn and is the final move
+            //can change piece with other
+            if (fromSquare.Piece.Name == piece.ePawn)
+            {
+                if (isWhiteTurn && instanceGame.Player.IsWhite && fromSquare.Piece.Color == color.eWhite && toSquare.Row == 0)
+                {
+                    canChangePiece = true;
+                    grdPlayerCapturedPieces.IsEnabled = true;
+                }
+                else if (isBrownTurn && instanceGame.Player.IsBlack && fromSquare.Piece.Color == color.eBrown && toSquare.Row == 7)
+                {
+                    canChangePiece = true;
+                    grdPlayerCapturedPieces.IsEnabled = true;
+                }
+            }
+
             bool isPieceCaptured = false;
 
             //move piece
@@ -323,6 +408,7 @@ namespace Chess
                     MessageBox.Show("King in chess!", "", MessageBoxButton.OK);
                     copyContentSquare(toSquare, fromSquare);
                     copyContentSquare(keepInMindPiece, toSquare);
+                    canChangePiece = false;
                     if (isPieceCaptured == true)
                         ArrCaputeredPiece.Remove(keepInMindPiece);
                     //clearContentSquare(ref table[toSquare.Row, toSquare.Column]);
@@ -337,27 +423,27 @@ namespace Chess
                     MessageBox.Show("King in chess!", "", MessageBoxButton.OK);
                     copyContentSquare(toSquare, fromSquare);
                     copyContentSquare(keepInMindPiece, toSquare);
+                    canChangePiece = false;
                     if (isPieceCaptured == true)
                         ArrCaputeredPiece.Remove(keepInMindPiece);
                     //clearContentSquare(ref table[toSquare.Row, toSquare.Column]);
                     return false;
                 }
             }
+
+            //wait to swap piece
+            if (canChangePiece == true)
+                grdRecoverPiece.Visibility = Visibility.Visible;
             return true;
         }
 
         private void UpdateTable(object sender, NotifyCollectionChangedEventArgs e)
         {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                 ObservableCollection<Moves> collection = sender as ObservableCollection<Moves>;
-                 MovePiece(collection.Last());
-            });
             if (InstanceGame.Player.IsWhite)
             {
                 isWhiteTurn = true;
                 isBrownTurn = false;
-                TitleTurn.Content= "It's white turn...";
+                TitleTurn.Content = "It's white turn...";
             }
             else if (InstanceGame.Player.IsBlack)
             {
@@ -365,6 +451,11 @@ namespace Chess
                 isWhiteTurn = false;
                 TitleTurn.Content = "It's black turn...";
             }
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+              ObservableCollection<Moves> collection = sender as ObservableCollection<Moves>;
+              MovePiece(collection.Last());
+            });
         }
 
         Square getLastPieceCaptured()
@@ -417,9 +508,10 @@ namespace Chess
                             if (isCheckMate(color.eWhite) == true)
                                 InstanceGame.IsFinishGame = true;
                     }
+
                     if (InstanceGame.Player.IsWhite)
                     {
-                        isWhiteTurn= false;
+                        isWhiteTurn = false;
                         TitleTurn.Content = "It's black turn...";
                     }
                     else if (Table.InstanceGame.Player.IsBlack)
@@ -427,8 +519,13 @@ namespace Chess
                         isBrownTurn = false;
                         TitleTurn.Content = "It's white turn...";
                     }
-                    ArrMoves.Add(mv);
-                    selectedPiece = null;
+
+                    if (false == canChangePiece)
+                    {
+                        ArrMoves.Add(mv);
+                        selectedPiece = null;
+                    }
+                    else lastMove = mv;
                 }
             }
         }

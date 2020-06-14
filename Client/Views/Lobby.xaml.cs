@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace Client.Views
 {
     /// <summary>
-    /// Interaction logic for LoginPage.xaml
+    /// Interaction logic for Lobby.xaml
     /// </summary>
-    public partial class LoginPage : UserControl
+    public partial class Lobby : UserControl
     {
-        public LoginPage()
+        public Lobby()
         {
             InitializeComponent();
         }

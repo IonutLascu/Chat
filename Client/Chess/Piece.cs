@@ -25,7 +25,7 @@ namespace Chess
         eKing,
     }
     
-    public class Piece
+    public class Piece : IComparable
     {
         public Image Img { get; set; }
         public piece Name { get; set; }
@@ -53,6 +53,14 @@ namespace Chess
             if(j < 0 || j > 7)
                 return false;
             return true;
+        }
+
+        public int CompareTo(object obj)
+        {
+            Piece cmp = obj as Piece;
+            if (cmp.Name == this.Name && cmp.Color == this.Color)
+                return 1;
+            return 0;
         }
     }
 }

@@ -19,7 +19,7 @@ namespace Chess
 {
     public partial class Square : UserControl, ICloneable
     {
-        public Brush ColorSquare { get; set; }
+        public Brush ColorSquare { get; }
         public Piece Piece { get; set; }
         public int Row { get; set; }
         public int Column { get; set;}

@@ -37,7 +37,13 @@
             <Label x:Name="lblNameOpponent" FontSize="30"/>
             <local:Cronometer x:Name="swOpponentTimer"/>
         </StackPanel>
-        <Grid Width="540" Height="540" Grid.Column="1" Grid.Row="1">
+        <StackPanel x:Name="grdPlayerCapturedPieces" Grid.Row="1" Grid.Column="0" 
+                    Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+        <StackPanel x:Name="grdOpponentCapturedPieces" Grid.Row="1" Grid.Column="2"
+                    Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+        <StackPanel x:Name="grdRecoverPiece" Grid.Row="1" Grid.Column="1"
+                    Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Visibility="Hidden"/>
+        <Grid Width="540" Height="540" Grid.Column="1" Grid.Row="1" Panel.ZIndex="99">
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"/>
                 <RowDefinition Height="2*"/>

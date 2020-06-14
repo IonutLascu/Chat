@@ -14,15 +14,12 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Green.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.Lime.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Accent/MaterialDesignColor.LightGreen.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <!--Locals-->
-            <DataTemplate x:Key="RegisterTemplate">
-                <views:RegisterPage/>
-            </DataTemplate>
-            <DataTemplate x:Key="LoginTemplate">
-                <views:LoginPage/>
+            <DataTemplate x:Key="LobbyTemplate">
+                <views:Lobby/>
             </DataTemplate>
             <DataTemplate x:Key="ChatTemplate">
                 <views:ChatPage/>
@@ -31,13 +28,10 @@
                 <chess:Table/>
             </DataTemplate>
             <Style x:Key="ChatContentStyle" TargetType="ContentControl">
-                <Setter Property="ContentTemplate" Value="{StaticResource RegisterTemplate}"/>
+                <Setter Property="ContentTemplate" Value="{StaticResource LobbyTemplate}"/>
                 <Style.Triggers>
-                    <DataTrigger Binding="{Binding UserState}" Value="{x:Static enums:UserState.Login}">
-                        <Setter Property="ContentTemplate" Value="{StaticResource LoginTemplate}"/>
-                    </DataTrigger>
-                    <DataTrigger Binding="{Binding UserState}" Value="{x:Static enums:UserState.Register}">
-                        <Setter Property="ContentTemplate" Value="{StaticResource RegisterTemplate}"/>
+                    <DataTrigger Binding="{Binding UserState}" Value="{x:Static enums:UserState.Lobby}">
+                        <Setter Property="ContentTemplate" Value="{StaticResource LobbyTemplate}"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding UserState}" Value="{x:Static enums:UserState.Chat}">
                         <Setter Property="ContentTemplate" Value="{StaticResource ChatTemplate}"/>

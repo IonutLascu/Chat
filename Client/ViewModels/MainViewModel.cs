@@ -183,7 +183,6 @@ namespace Client.ViewModels
         }
         private void OpenRegister()
         {
-            UserState = UserState.Register;
             //do not let the user and password written
             UserName = string.Empty;
             Password = string.Empty;
@@ -199,7 +198,6 @@ namespace Client.ViewModels
         }
         private void OpenLogin()
         {
-            UserState = UserState.Login;
             VisibilityTitle = Visibility.Visible;
             //do not let the user, pass and email written
 
@@ -250,7 +248,6 @@ namespace Client.ViewModels
                 string result = await chatService.RegisterAsync(_newUsername, _newPassword, _newEmail);
                 if (result == string.Empty)
                 {
-                    UserState = UserState.Login;
                     VisibilityTitle = Visibility.Visible;
                     dialogService.ShowNotification("Register succesfully!");
 
@@ -381,7 +378,7 @@ namespace Client.ViewModels
             try
             {
                 await chatService.LogoutAsync();
-                UserState = UserState.Login;
+                UserState = UserState.Lobby;
                 dialogService.ShowNotification("Client was disconected!");
                 return true;
             }
@@ -409,7 +406,13 @@ namespace Client.ViewModels
         {
             try
             {
-                await chatService.TypingAsync(SelectedParticipant.Username);
+                if (_textMessage.EndsWith("\n"))
+                {
+                    _textMessage = _textMessage.Remove(_textMessage.Count() - 2);
+                    await SendTextMessage();
+                }
+                else
+                    await chatService.TypingAsync(SelectedParticipant.Username);
                 return true;
             }
             catch (Exception) { return false; }
