@@ -22,7 +22,7 @@ namespace Chess
         eWhite,
     }
 
-    public struct Moves
+    public class Moves
     {
         public Moves(Square from, Square to)
         {
@@ -36,12 +36,14 @@ namespace Chess
             toSquare = Table.table[ToRow, ToColumn];
         }
 
-        private Square fromSquare;
-        private Square toSquare;
+        private Square fromSquare = null;
+        private Square toSquare = null;
+
+        private string pieceWasChanged = string.Empty;
 
         public Square FromSquare { get => fromSquare; set => fromSquare = value; }
         public Square ToSquare { get => toSquare; set => toSquare = value; }
-
+        public string PieceWasChanged { get => pieceWasChanged; set => pieceWasChanged = value; }
     }
 
     public partial class Table : UserControl
@@ -156,10 +158,13 @@ namespace Chess
         private void RecoverPiece(object sender, RoutedEventArgs e)
         {
             var pieceRecovered = (sender as Square);
-            table[lastMove.ToSquare.Row, lastMove.ToSquare.Column].Piece = pieceRecovered.Piece;
-            table[lastMove.ToSquare.Row, lastMove.ToSquare.Column].Box.Content = pieceRecovered.Box.Content;
+            Piece newPiece = getPieceInstance(pieceRecovered.Piece.Name, pieceRecovered.Piece.Color);
+            table[lastMove.ToSquare.Row, lastMove.ToSquare.Column].Piece = newPiece;
+            table[lastMove.ToSquare.Row, lastMove.ToSquare.Column].Box.Content = newPiece.Img;
             selectedPiece = null;
             canChangePiece = false;
+            lastMove.PieceWasChanged = pieceRecovered.Piece.Name.ToString();
+            grdRecoverPiece.Visibility = Visibility.Hidden;
             ArrMoves.Add(lastMove);
         }
 
@@ -453,8 +458,20 @@ namespace Chess
             }
             Application.Current.Dispatcher.Invoke(() =>
             {
-              ObservableCollection<Moves> collection = sender as ObservableCollection<Moves>;
-              MovePiece(collection.Last());
+                ObservableCollection<Moves> collection = sender as ObservableCollection<Moves>;
+                //update piece that was changed
+                if (collection.Last().PieceWasChanged != string.Empty)
+                {
+                    Enum.TryParse(collection.Last().PieceWasChanged, out piece pieceName);
+                    Piece piece = getPieceInstance(pieceName, isWhiteTurn ? color.eBrown : color.eWhite);
+
+                    collection.Last().FromSquare.Piece = piece;
+                    collection.Last().FromSquare.Box.Content = piece.Img;
+                    
+                    table[collection.Last().FromSquare.Row, collection.Last().FromSquare.Column].Piece = piece;
+                    table[collection.Last().FromSquare.Row, collection.Last().FromSquare.Column].Box.Content = piece.Img;
+                }
+                MovePiece(collection.Last());
             });
         }
 

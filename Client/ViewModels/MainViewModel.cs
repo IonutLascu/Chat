@@ -634,10 +634,11 @@ namespace Client.ViewModels
             SendMove(collection.Last().FromSquare.Row,
                 collection.Last().FromSquare.Column,
                 collection.Last().ToSquare.Row,
-                collection.Last().ToSquare.Column);
+                collection.Last().ToSquare.Column,
+                collection.Last().PieceWasChanged);
         }
 
-        private void SendMove(int FromRow, int FromColumn, int ToRow, int ToColumn)
+        private void SendMove(int FromRow, int FromColumn, int ToRow, int ToColumn, string pieceWasChanged)
         {
             try
             {
@@ -645,7 +646,7 @@ namespace Client.ViewModels
                 Application.Current.Dispatcher.Invoke(new Action(async () => 
                 {
                     var recepient = Table.InstanceGame.Opponent.Username;
-                    await chatService.SendMoveAsync(recepient, FromRow, FromColumn, ToRow, ToColumn, Table.InstanceGame.IsFinishGame);
+                    await chatService.SendMoveAsync(recepient, FromRow, FromColumn, ToRow, ToColumn, Table.InstanceGame.IsFinishGame, pieceWasChanged);
                     Table.InstanceGame.Player.StpWatch.PauseTimer();
                     Table.InstanceGame.Opponent.StpWatch.StartTimer();
                     if (Table.InstanceGame.IsFinishGame == true)
@@ -670,7 +671,7 @@ namespace Client.ViewModels
             }
         }
 
-        private void ReceiveMove(string name, int fromRow, int fromColumn, int toRow, int toColumn, bool? isFinihed)
+        private void ReceiveMove(string name, int fromRow, int fromColumn, int toRow, int toColumn, bool? isFinihed, string pieceWasChanged)
         {
             Application.Current.Dispatcher.Invoke(new Action(() =>
             {
@@ -695,7 +696,8 @@ namespace Client.ViewModels
                     chatService.NotifyAllAsync(name, false);
                     return;
                 }
-                Table.ArrOponentMoves.Add(new Moves(fromRow, fromColumn, toRow, toColumn));
+
+                Table.ArrOponentMoves.Add(new Moves(fromRow, fromColumn, toRow, toColumn) { PieceWasChanged = pieceWasChanged});  
                 Table.InstanceGame.Player.StpWatch.StartTimer();
             }));
 

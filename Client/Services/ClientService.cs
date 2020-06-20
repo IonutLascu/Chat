@@ -22,7 +22,7 @@ namespace Client.Services
 
         public event Action<string> InviteToPlay;
         public event Action<string, string> GetResponse;
-        public event Action<string, int, int, int, int, bool?> ReceiveMove;
+        public event Action<string, int, int, int, int, bool?, string> ReceiveMove;
         public event Action<string, bool> NotifyIsInGame;
 
         private IHubProxy hubProxy;
@@ -46,7 +46,7 @@ namespace Client.Services
             hubProxy.On<string>("ParticipantTyping", (p) => ParticipantTyping?.Invoke(p));
             hubProxy.On<string>("InviteToPlay", (p) => InviteToPlay?.Invoke(p));
             hubProxy.On<string, string>("GetResponse", (p, q) => GetResponse?.Invoke(p, q));
-            hubProxy.On<string, int, int, int, int, bool?>("ReceiveMove", (p1, p2, p3, p4, p5, p6) => ReceiveMove?.Invoke(p1, p2, p3, p4, p5, p6));
+            hubProxy.On<string, int, int, int, int, bool?, string>("ReceiveMove", (p1, p2, p3, p4, p5, p6, p7) => ReceiveMove?.Invoke(p1, p2, p3, p4, p5, p6, p7));
             hubProxy.On<string, bool>("NotifyIsInGame", (p1, p2) => NotifyIsInGame?.Invoke(p1, p2));
 
             connection.Reconnecting += Reconnecting;
@@ -114,9 +114,9 @@ namespace Client.Services
             await hubProxy.Invoke("SendResponseBack", new object[] { recepient, response });
         }
 
-        public async Task SendMoveAsync(string recepient, int fromR, int fromC, int toR, int toC, bool? isFinish)
+        public async Task SendMoveAsync(string recepient, int fromR, int fromC, int toR, int toC, bool? isFinish, string pieceWasChanged)
         {
-            await hubProxy.Invoke("SendMoveAsync", new object[] {recepient, fromR, fromC, toR, toC, isFinish});
+            await hubProxy.Invoke("SendMoveAsync", new object[] {recepient, fromR, fromC, toR, toC, isFinish, pieceWasChanged});
         }
 
         public async Task NotifyAllAsync(string recepient, bool isInGame)

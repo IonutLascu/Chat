@@ -25,7 +25,7 @@ namespace Chess
         eKing,
     }
     
-    public class Piece : IComparable
+    public abstract class Piece : IComparable
     {
         public Image Img { get; set; }
         public piece Name { get; set; }
@@ -37,7 +37,7 @@ namespace Chess
             Color = color;
         }
         public virtual List<Tuple<int, int>> getPossibleMovesWhite(int i, int j) { return null; }
-        public virtual List<Tuple<int, int>> getPossibleMovesBlack(int i, int j ) { return null; }
+        public virtual List<Tuple<int, int>> getPossibleMovesBlack(int i, int j) { return null; }
 
         public List<Tuple<int, int>> getPossibleMoves(int i, int j)
         {
