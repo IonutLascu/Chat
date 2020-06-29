@@ -16,7 +16,7 @@ namespace Server
         void BroadcastTextMessage(string sender, string message);
         void UnicastTextMessage(string sender, string message);
         void ParticipantTyping(string sender);
-        Task InviteToPlay(string sender);
+        Task InviteToPlay(string sender, int time);
         void GetResponse(string sender, object response);
         void ReceiveMove(string sender, int fR, int fC, int tR, int tC, bool? isFinish, string pieceWasChanged);
         void NotifyIsInGame(string sender, bool isInGame);

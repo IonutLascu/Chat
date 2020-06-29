@@ -21,6 +21,8 @@ using Chess;
 using System.Collections.Specialized;
 using Client.Chess;
 using System.Linq.Expressions;
+using GalaSoft.MvvmLight.Command;
+using System.Windows.Controls;
 
 namespace Client.ViewModels
 {
@@ -322,21 +324,25 @@ namespace Client.ViewModels
         #endregion
 
         #region Play Game Command
+        private int _timeInGame;
+        public int TimeInGame { get => _timeInGame; set => _timeInGame = value; }
+
         private ICommand _playChessGameCommand;
         public ICommand PlayChessGameCommand
         {
             get
             {
                 return _playChessGameCommand ?? (_playChessGameCommand =
-                  new CommandAsync(() => SendInviteToPlay(), (o) => CanSendInviteToPlay()));
+                  new CommandAsync(() =>  SendInviteToPlay(), (o) => CanSendInviteToPlay()));
             }
         }
         private async Task<bool> SendInviteToPlay()
         {
             try
             {
+                _timeInGame = dialogService.SelectTimeGame();
                 var recepient = _selectedParticipant.Username;
-                await chatService.SendInviteToPlayAsync(recepient);
+                await chatService.SendInviteToPlayAsync(recepient, _timeInGame);
                 return true;
             }
             catch (Exception) { return false; }
@@ -559,6 +565,8 @@ namespace Client.ViewModels
         }
         private void InitTable()
         {
+            Table.InstanceGame.Player.StpWatch.Time = _timeInGame;
+            Table.InstanceGame.Opponent.StpWatch.Time = _timeInGame;
             Table.ArrMoves.CollectionChanged -= CollectionWasChanged;
             Table.ArrMoves.CollectionChanged += CollectionWasChanged;
         }
@@ -572,10 +580,9 @@ namespace Client.ViewModels
                 titleTurn = value;
                 OnPropertyChanged();
             }
-
         }
 
-        private async void InviteToPlay(string name)
+        private async void InviteToPlay(string name, int time)
         {
             //there was a problem with owner of the current application
             bool result = false;
@@ -584,10 +591,10 @@ namespace Client.ViewModels
                 result = dialogService.ShowConfirmationRequest($"Player {name} wanna play with you", "", true);
             }));
 
-
             //start game
             if (true == result)
             {
+                _timeInGame = time;
                 UserState = UserState.InGame;
                 Table.InstanceGame = new InstanceGame(new Player(_userName) { IsWhite = true, IsBlack = false },
                                                         new Player(name) { IsBlack = true, IsWhite = false });

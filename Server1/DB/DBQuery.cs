@@ -38,6 +38,7 @@ namespace Server
             }
             return false;
         }
+
         public static bool CheckEmail(string email)
         {
             using (var usr = new UserContext())

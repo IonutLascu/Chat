@@ -24,10 +24,10 @@ namespace Chess
     public partial class Cronometer : UserControl
     {
         public event EventHandler timeElapsed;
-        private int time = 100;
+        private int time;
         private DispatcherTimer Timer;
 
-        public int Time { get => time; }
+        public int Time { get => time; set => time = value; }
 
         public Cronometer()
         {

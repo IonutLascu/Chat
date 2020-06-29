@@ -130,7 +130,7 @@ namespace Server
             Clients.Client(client.UserId).ParticipantTyping(sender);
         }
 
-        public async Task SendInviteToPlay(string recepient)
+        public async Task SendInviteToPlay(string recepient, int time)
         {
             if (string.IsNullOrEmpty(recepient))
                 return;
@@ -140,7 +140,7 @@ namespace Server
             ChatClients.TryGetValue(recepient, out client);
 
             //wait to response client
-            await Clients.Client(client.UserId).InviteToPlay(sender);
+            await Clients.Client(client.UserId).InviteToPlay(sender, time);
         }
 
         public async Task SendResponseBack(string recepient, object response)

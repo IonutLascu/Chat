@@ -26,7 +26,7 @@
             <ColumnDefinition Width="1.5*"/>
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Column="0" Grid.ColumnSpan="1" VerticalAlignment="Center" HorizontalAlignment="Left" Orientation="Vertical">
-            <Label x:Name="lblNamePlayer" FontSize="30"/>
+            <Label x:Name="lblNamePlayer" FontSize="25"/>
             <local:Cronometer x:Name="swPlayerTimer"/>
         </StackPanel>
         <materialDesign:ColorZone Mode="PrimaryMid" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="3">
@@ -34,7 +34,7 @@
         </materialDesign:ColorZone>
 
         <StackPanel Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Vertical">
-            <Label x:Name="lblNameOpponent" FontSize="30"/>
+            <Label x:Name="lblNameOpponent" FontSize="25"/>
             <local:Cronometer x:Name="swOpponentTimer"/>
         </StackPanel>
         <StackPanel x:Name="grdPlayerCapturedPieces" Grid.Row="1" Grid.Column="0" 

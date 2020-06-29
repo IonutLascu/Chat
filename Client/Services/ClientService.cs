@@ -20,7 +20,7 @@ namespace Client.Services
         public event Action ConnectionClosed;
         public event Action<string> ParticipantTyping;
 
-        public event Action<string> InviteToPlay;
+        public event Action<string, int> InviteToPlay;
         public event Action<string, string> GetResponse;
         public event Action<string, int, int, int, int, bool?, string> ReceiveMove;
         public event Action<string, bool> NotifyIsInGame;
@@ -44,7 +44,7 @@ namespace Client.Services
             hubProxy.On<string, string>("BroadcastTextMessage", (n, m) => NewTextMessage?.Invoke(n, m, MessageType.Broadcast));
             hubProxy.On<string, string>("UnicastTextMessage", (n, m) => NewTextMessage?.Invoke(n, m, MessageType.Unicast));
             hubProxy.On<string>("ParticipantTyping", (p) => ParticipantTyping?.Invoke(p));
-            hubProxy.On<string>("InviteToPlay", (p) => InviteToPlay?.Invoke(p));
+            hubProxy.On<string, int>("InviteToPlay", (p, t) => InviteToPlay?.Invoke(p, t));
             hubProxy.On<string, string>("GetResponse", (p, q) => GetResponse?.Invoke(p, q));
             hubProxy.On<string, int, int, int, int, bool?, string>("ReceiveMove", (p1, p2, p3, p4, p5, p6, p7) => ReceiveMove?.Invoke(p1, p2, p3, p4, p5, p6, p7));
             hubProxy.On<string, bool>("NotifyIsInGame", (p1, p2) => NotifyIsInGame?.Invoke(p1, p2));
@@ -104,9 +104,9 @@ namespace Client.Services
             await hubProxy.Invoke("Typing", recepient);
         }
 
-        public async Task SendInviteToPlayAsync(string recepient)
+        public async Task SendInviteToPlayAsync(string recepient, int time)
         {
-            await hubProxy.Invoke("SendInviteToPlay", recepient);
+            await hubProxy.Invoke("SendInviteToPlay",new object[] { recepient, time });
         }
 
         public async Task SendResponseAsync(string recepient, object response)

@@ -10,5 +10,6 @@ namespace Client.Services
     {
         void ShowNotification(string message, string caption = "", bool autoClose = false);
         bool ShowConfirmationRequest(string message, string caption = "", bool autoClose = false);
+        int SelectTimeGame();
     }
 }

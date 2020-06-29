@@ -20,7 +20,7 @@ namespace Client.Services
         event Action<string, string, MessageType> NewTextMessage;
         event Action<string> ParticipantTyping;
        
-        event Action<string> InviteToPlay;
+        event Action<string, int> InviteToPlay;
         event Action<string, string> GetResponse;
         event Action<string, int, int, int, int, bool?, string> ReceiveMove;
         event Action<string, bool> NotifyIsInGame;
@@ -34,7 +34,7 @@ namespace Client.Services
         Task SendUnicastMessageAsync(string recepient, string msg);
         Task TypingAsync(string recepient);
 
-        Task SendInviteToPlayAsync(string recepient);
+        Task SendInviteToPlayAsync(string recepient, int time);
         Task SendResponseAsync(string recepient, object response);
         Task SendMoveAsync(string recepient, int fromR, int fromC, int toR, int toC, 
             bool? isFinish, string pieceWasChanged);
