@@ -172,5 +172,12 @@ namespace Server
 
             Clients.All.NotifyIsInGame(sender, isInGame);
         }
+
+        public void NotifyPlayerGameIsFinished(string recepient)
+        {
+            User client = new User();
+            ChatClients.TryGetValue(recepient, out client);
+            Clients.Client(client.UserId).ParticipantDisconnectedWinGame();
+        }
     }
 }

@@ -24,6 +24,7 @@ namespace Client.Services
         public event Action<string, string> GetResponse;
         public event Action<string, int, int, int, int, bool?, string> ReceiveMove;
         public event Action<string, bool> NotifyIsInGame;
+        public event Action ParticipantDisconnectedWinGame;
 
         private IHubProxy hubProxy;
         private HubConnection connection;
@@ -48,7 +49,7 @@ namespace Client.Services
             hubProxy.On<string, string>("GetResponse", (p, q) => GetResponse?.Invoke(p, q));
             hubProxy.On<string, int, int, int, int, bool?, string>("ReceiveMove", (p1, p2, p3, p4, p5, p6, p7) => ReceiveMove?.Invoke(p1, p2, p3, p4, p5, p6, p7));
             hubProxy.On<string, bool>("NotifyIsInGame", (p1, p2) => NotifyIsInGame?.Invoke(p1, p2));
-
+            hubProxy.On("ParticipantDisconnectedWinGame", () => ParticipantDisconnectedWinGame?.Invoke());
             connection.Reconnecting += Reconnecting;
             connection.Reconnected += Reconnected;
             connection.Closed += Disconnected;
@@ -122,6 +123,11 @@ namespace Client.Services
         public async Task NotifyAllAsync(string recepient, bool isInGame)
         {
             await hubProxy.Invoke("NotifyAllAsync", new object[] { recepient, isInGame});
+        }
+
+        public async Task NotifyOpponentGameIsFinished(string name)
+        {
+            await hubProxy.Invoke("NotifyPlayerGameIsFinished", name);
         }
     }
 }

@@ -383,6 +383,11 @@ namespace Client.ViewModels
         {
             try
             {
+                if (UserState == UserState.InGame)
+                {
+                    chatService.NotifyOpponentGameIsFinished(Table.InstanceGame.Opponent.Username);
+                    chatService.NotifyAllAsync(Table.InstanceGame.Opponent.Username, false);
+                }
                 await chatService.LogoutAsync();
                 UserState = UserState.Lobby;
                 dialogService.ShowNotification("Client was disconected!");
@@ -707,7 +712,16 @@ namespace Client.ViewModels
                 Table.ArrOponentMoves.Add(new Moves(fromRow, fromColumn, toRow, toColumn) { PieceWasChanged = pieceWasChanged});  
                 Table.InstanceGame.Player.StpWatch.StartTimer();
             }));
+        }
 
+        private void GameIsFinished()
+        {
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                chatService.NotifyAllAsync(Table.InstanceGame.Player.Username, false);
+                dialogService.ShowNotification("You win", "Participant disconnected", true);
+                UserState = UserState.Chat;
+            }));
         }
 
         #endregion
@@ -730,9 +744,9 @@ namespace Client.ViewModels
             chatSvc.GetResponse += GetResponse;
             chatSvc.ReceiveMove += ReceiveMove;
             chatSvc.NotifyIsInGame += NotifyIsInGame;
+            chatSvc.ParticipantDisconnectedWinGame += GameIsFinished;
 
             ctxTaskFactory = new TaskFactory(TaskScheduler.FromCurrentSynchronizationContext());
         }
-
     }
 }
