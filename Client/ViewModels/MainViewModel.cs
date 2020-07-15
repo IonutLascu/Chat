@@ -324,6 +324,39 @@ namespace Client.ViewModels
         #endregion
 
         #region Play Game Command
+
+        private ICommand _surrenderCommand;
+        public ICommand SurrenderCommand {
+            get 
+            {
+                return _surrenderCommand ?? (_surrenderCommand =
+                    new CommandAsync(() => Surrender(), (o) => CanSurrender()));
+            } 
+        
+        }
+
+        private async Task<bool> Surrender()
+        {
+            try
+            {
+                if (UserState == UserState.InGame)
+                {
+                    await chatService.NotifyOpponentGameIsFinishedSurrender(Table.InstanceGame.Opponent.Username);
+                    await chatService.NotifyAllAsync(Table.InstanceGame.Opponent.Username, false);
+                    UserState = UserState.Chat;
+                }
+                return true;
+            }
+            catch (Exception) { return false; }
+
+        }
+
+        private bool CanSurrender()
+        {
+            return true;
+        }
+
+
         private int _timeInGame;
         public int TimeInGame { get => _timeInGame; set => _timeInGame = value; }
 
@@ -724,6 +757,16 @@ namespace Client.ViewModels
             }));
         }
 
+        private void PlayerSurrender()
+        {
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            {
+                chatService.NotifyAllAsync(Table.InstanceGame.Player.Username, false);
+                dialogService.ShowNotification("You win", "Participant surrender", true);
+                UserState = UserState.Chat;
+            }));
+        }
+
         #endregion
 
         public MainViewModel(IClientService chatSvc, IMessageErrorService diagSvc)
@@ -745,6 +788,7 @@ namespace Client.ViewModels
             chatSvc.ReceiveMove += ReceiveMove;
             chatSvc.NotifyIsInGame += NotifyIsInGame;
             chatSvc.ParticipantDisconnectedWinGame += GameIsFinished;
+            chatSvc.ParticipantSurrended += PlayerSurrender;
 
             ctxTaskFactory = new TaskFactory(TaskScheduler.FromCurrentSynchronizationContext());
         }

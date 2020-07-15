@@ -179,5 +179,12 @@ namespace Server
             ChatClients.TryGetValue(recepient, out client);
             Clients.Client(client.UserId).ParticipantDisconnectedWinGame();
         }
+
+        public void NotifyPlayerGameIsFinishedSurrender(string recepient)
+        {
+            User client = new User();
+            ChatClients.TryGetValue(recepient, out client);
+            Clients.Client(client.UserId).ParticipantSurrended();
+        }
     }
 }

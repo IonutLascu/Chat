@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -116,6 +117,14 @@ namespace Chess
 
             initTableSqare();
             initTablePiece();
+
+            if (instanceGame.Player.IsBlack == true)
+            {
+                //rotate grid with 180 degrees
+                mainTable.LayoutTransform = new RotateTransform(180);
+                foreach (var sq in mainTable.Children)
+                    (sq as Square).LayoutTransform = new RotateTransform(180);
+            }
             instanceGame.Player.StpWatch = swPlayerTimer;
             instanceGame.Opponent.StpWatch = swOpponentTimer;
 
@@ -136,22 +145,22 @@ namespace Chess
                 if (e.Action == NotifyCollectionChangedAction.Add)
                     grdOpponentCapturedPieces.Children.Add(capturedPiece);
                 else
-                    grdOpponentCapturedPieces.Children.Remove(capturedPiece);
+                    grdOpponentCapturedPieces.Children.RemoveAt(grdOpponentCapturedPieces.Children.Count - 1);
             else if (isBrownTurn && instanceGame.Player.IsBlack && capturedPiece.Piece.Color == color.eWhite)
                 if (e.Action == NotifyCollectionChangedAction.Add)
                     grdOpponentCapturedPieces.Children.Add(capturedPiece);
                 else
-                    grdOpponentCapturedPieces.Children.Remove(capturedPiece);
+                    grdOpponentCapturedPieces.Children.RemoveAt(grdOpponentCapturedPieces.Children.Count - 1);
             else if (isBrownTurn && instanceGame.Player.IsBlack && capturedPiece.Piece.Color == color.eBrown)
                 if (e.Action == NotifyCollectionChangedAction.Add)
                     grdPlayerCapturedPieces.Children.Add(capturedPiece);
                 else
-                    grdPlayerCapturedPieces.Children.Remove(capturedPiece);
+                    grdOpponentCapturedPieces.Children.RemoveAt(grdOpponentCapturedPieces.Children.Count - 1);
             else if (isWhiteTurn && instanceGame.Player.IsWhite && capturedPiece.Piece.Color == color.eWhite)
                 if (e.Action == NotifyCollectionChangedAction.Add)
                     grdPlayerCapturedPieces.Children.Add(capturedPiece);
                 else
-                    grdPlayerCapturedPieces.Children.Remove(capturedPiece);
+                    grdOpponentCapturedPieces.Children.RemoveAt(grdOpponentCapturedPieces.Children.Count - 1);
 
         }
 
@@ -165,6 +174,34 @@ namespace Chess
             canChangePiece = false;
             lastMove.PieceWasChanged = pieceRecovered.Piece.Name.ToString();
             grdRecoverPiece.Visibility = Visibility.Hidden;
+            //check if the game is finished
+            if (isWhiteTurn)
+            {
+                isKingInChess(color.eBrown);
+                if (King.isKingBrawnInChess == true)
+                    if (isCheckMate(color.eBrown) == true)
+                        InstanceGame.IsFinishGame = true;
+
+            }
+            else if (isBrownTurn)
+            {
+                isKingInChess(color.eWhite);
+                if (King.isKingWhiteInChess == true)
+                    if (isCheckMate(color.eWhite) == true)
+                        InstanceGame.IsFinishGame = true;
+            }
+
+            if (InstanceGame.Player.IsWhite)
+            {
+                isWhiteTurn = false;
+                TitleTurn.Content = "It's black turn...";
+            }
+            else if (Table.InstanceGame.Player.IsBlack)
+            {
+                isBrownTurn = false;
+                TitleTurn.Content = "It's white turn...";
+            }
+
             ArrMoves.Add(lastMove);
         }
 
@@ -368,6 +405,22 @@ namespace Chess
             return checkMate;
         }
 
+        private void DisableEnpassant(color colorPiece)
+        {
+            foreach (var sq in table)
+            {
+                if (sq.Piece != null && sq.Piece.Name == piece.ePawn && sq.Piece.Color == colorPiece)
+                {
+                    if ((sq.Piece as Pawn).PossitionEnpassant == true)
+                    {
+                        (sq.Piece as Pawn).PossitionEnpassant = false;
+                        (sq.Piece as Pawn).CanBeEnpassant = false;
+                    }
+                }
+
+            }
+        }
+
         public bool MovePiece(Moves move)
         {
             Square fromSquare = table[move.FromSquare.Row, move.FromSquare.Column];
@@ -391,11 +444,23 @@ namespace Chess
 
             bool isPieceCaptured = false;
 
+          
+
             //move piece
             Square keepInMindPiece = toSquare.Clone() as Square;
             fromSquare.Box.Background = fromSquare.ColorSquare;
             make_reinitColorSquare(fromSquare);
             copyContentSquare(fromSquare, toSquare);
+            
+            //clear piece when toSquare is enpassant
+            if (fromSquare.Piece.Name == piece.ePawn &&
+                table[fromSquare.Row, toSquare.Column].Piece != null &&
+                table[fromSquare.Row, toSquare.Column].Piece.Name == piece.ePawn &&
+                (table[fromSquare.Row, toSquare.Column].Piece as Pawn).PossitionEnpassant == true)
+            {
+                keepInMindPiece = table[fromSquare.Row, toSquare.Column].Clone() as Square;
+                clearContentSquare(ref table[fromSquare.Row, toSquare.Column]);
+            }
             if (keepInMindPiece.Piece != null)
             {
                 ArrCaputeredPiece.Add(keepInMindPiece);   //save captured piece
@@ -403,6 +468,7 @@ namespace Chess
             }
             clearContentSquare(ref fromSquare);    //clear selected item
 
+            
             //call this method to know to init static bool from king
             if (isWhiteTurn && toSquare.Piece != null && toSquare.Piece.Color == color.eWhite)
             {
@@ -439,6 +505,10 @@ namespace Chess
             //wait to swap piece
             if (canChangePiece == true)
                 grdRecoverPiece.Visibility = Visibility.Visible;
+
+            //enpassant update
+            if (toSquare.Piece.Name == piece.ePawn)
+                (toSquare.Piece as Pawn).UpdateEnpassant(fromSquare, toSquare);
             return true;
         }
 
@@ -467,7 +537,7 @@ namespace Chess
 
                     collection.Last().FromSquare.Piece = piece;
                     collection.Last().FromSquare.Box.Content = piece.Img;
-                    
+
                     table[collection.Last().FromSquare.Row, collection.Last().FromSquare.Column].Piece = piece;
                     table[collection.Last().FromSquare.Row, collection.Last().FromSquare.Column].Box.Content = piece.Img;
                 }
@@ -525,13 +595,15 @@ namespace Chess
                             if (isCheckMate(color.eWhite) == true)
                                 InstanceGame.IsFinishGame = true;
                     }
+                    //disable enpassant possibilites
+                    DisableEnpassant(isBrownTurn ? color.eWhite : color.eBrown);
 
-                    if (InstanceGame.Player.IsWhite)
+                    if (InstanceGame.Player.IsWhite && canChangePiece != true)
                     {
                         isWhiteTurn = false;
                         TitleTurn.Content = "It's black turn...";
                     }
-                    else if (Table.InstanceGame.Player.IsBlack)
+                    else if (Table.InstanceGame.Player.IsBlack && canChangePiece != true)
                     {
                         isBrownTurn = false;
                         TitleTurn.Content = "It's white turn...";
@@ -555,6 +627,5 @@ namespace Chess
             instanceGame.IsFinishGame = false;
             arrMoves.Add(new Moves(0, 0, 0, 0));
         }
-
     }
 }

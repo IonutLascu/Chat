@@ -25,6 +25,7 @@ namespace Client.Services
         event Action<string, int, int, int, int, bool?, string> ReceiveMove;
         event Action<string, bool> NotifyIsInGame;
         event Action ParticipantDisconnectedWinGame;
+        event Action ParticipantSurrended;
 
         Task ConnectAsync();
         //receive list of users and message 
@@ -41,5 +42,6 @@ namespace Client.Services
             bool? isFinish, string pieceWasChanged);
         Task NotifyAllAsync(string recepient, bool isInGame);
         Task NotifyOpponentGameIsFinished(string name);
+        Task NotifyOpponentGameIsFinishedSurrender(string name);
     }
 }

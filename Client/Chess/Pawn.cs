@@ -17,6 +17,12 @@ namespace Chess
 {
     class Pawn : Piece
     {
+        private bool possitionEnpassant = false;
+        public bool PossitionEnpassant { get => possitionEnpassant; set => possitionEnpassant = value; }
+
+        private bool canBeEnpassant = true;
+        public bool CanBeEnpassant { get => canBeEnpassant; set => canBeEnpassant = value; }
+
         public Pawn(piece p, color c)
             : base(p, c)
         {
@@ -34,7 +40,8 @@ namespace Chess
 
             if (tempTable[i, j].Piece.Color == color.eBrown)
                 return null;
-            if (i == 6 && tempTable[i - 1,j].Piece == null)  //initial position the pawn can jump two squares
+            //initial position the pawn can jump two squares
+            if (i == 6 && tempTable[i - 1, j].Piece == null)  
             {
                 if (checkIsOnTable(i - 2, j) && tempTable[i - 2, j].Piece == null)
                     arrMoves.Add(new Tuple<int, int>(i - 2, j));
@@ -44,6 +51,19 @@ namespace Chess
             if (checkIsOnTable(i - 1, j) && tempTable[i - 1, j].Piece == null)
                 arrMoves.Add(new Tuple<int, int>(i - 1, j));
 
+            //check enpassant
+            if (checkIsOnTable(i, j + 1) && tempTable[i, j + 1].Piece != null && 
+                tempTable[i, j + 1].Piece.Name == piece.ePawn &&
+                (tempTable[i, j + 1].Piece as Pawn).possitionEnpassant == true)
+            {
+                arrMoves.Add(new Tuple<int, int>(i - 1, j + 1));
+            }
+            if (checkIsOnTable(i, j - 1) && tempTable[i, j - 1].Piece != null && 
+                tempTable[i, j - 1].Piece.Name == piece.ePawn &&
+                (tempTable[i, j - 1].Piece as Pawn).possitionEnpassant == true)
+            {
+                arrMoves.Add(new Tuple<int, int>(i - 1, j - 1));
+            }
             //check possible diagonal moves
             if (checkIsOnTable(i - 1, j + 1) && tempTable[i - 1, j + 1].Piece != null)
                 if (tempTable[i - 1, j + 1].Piece.Color == color.eBrown && tempTable[i - 1, j + 1].Piece.Name != piece.eKing)
@@ -75,6 +95,20 @@ namespace Chess
             if (checkIsOnTable(i + 1, j) && tempTable[i + 1, j].Piece == null)
                 arrMoves.Add(new Tuple<int, int>(i + 1, j));
 
+            //check enpassant
+            if (checkIsOnTable(i, j + 1) && tempTable[i, j + 1].Piece != null &&
+                tempTable[i, j + 1].Piece.Name == piece.ePawn &&
+                (tempTable[i, j + 1].Piece as Pawn).possitionEnpassant == true)
+            {
+                arrMoves.Add(new Tuple<int, int>(i + 1, j + 1));
+            }
+            if (checkIsOnTable(i, j - 1) && tempTable[i, j - 1].Piece != null &&
+                tempTable[i, j - 1].Piece.Name == piece.ePawn &&
+                (tempTable[i, j - 1].Piece as Pawn).possitionEnpassant == true)
+            {
+                arrMoves.Add(new Tuple<int, int>(i + 1, j - 1));
+            }
+
             //check possible diagonal moves
             if (checkIsOnTable(i + 1, j + 1) && tempTable[i + 1, j + 1].Piece != null)
                 if (tempTable[i + 1, j + 1].Piece.Color == color.eWhite && tempTable[i + 1, j + 1].Piece.Name != piece.eKing)
@@ -87,6 +121,37 @@ namespace Chess
                 else if (tempTable[i + 1, j - 1].Piece.Color == color.eWhite && tempTable[i + 1, j - 1].Piece.Name == piece.eKing)
                     King.isKingWhiteInChess = true;
             return arrMoves;
+        }
+
+        public void UpdateEnpassant(Square from, Square to)
+        {
+            Square[,] tempTable = Table.table;
+            if (from.Row == 1 && to.Row == 3 && canBeEnpassant)
+            {
+                int i = to.Row;
+                int j = to.Column;
+                if ((checkIsOnTable(i, j + 1) && tempTable[i, j + 1].Piece != null &&
+                    tempTable[i, j + 1].Piece.Name == piece.ePawn && tempTable[i, j + 1].Piece.Color == color.eWhite) ||
+                    (checkIsOnTable(i, j - 1) && tempTable[i, j - 1].Piece != null &&
+                    tempTable[i, j - 1].Piece.Name == piece.ePawn && tempTable[i, j - 1].Piece.Color == color.eWhite))
+                {
+                    possitionEnpassant = true;
+                }
+            }
+
+            if (from.Row == 6 && to.Row == 4 && canBeEnpassant)
+            {
+                int i = to.Row;
+                int j = to.Column;
+                if ((checkIsOnTable(i, j + 1) && tempTable[i, j + 1].Piece != null &&
+                    tempTable[i, j + 1].Piece.Name == piece.ePawn && tempTable[i, j + 1].Piece.Color == color.eBrown) ||
+                    (checkIsOnTable(i, j - 1) && tempTable[i, j - 1].Piece != null &&
+                    tempTable[i, j - 1].Piece.Name == piece.ePawn && tempTable[i, j - 1].Piece.Color == color.eBrown))
+                {
+                    possitionEnpassant = true;
+                }
+            }
+
         }
     }
 }

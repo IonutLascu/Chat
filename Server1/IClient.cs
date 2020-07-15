@@ -21,5 +21,6 @@ namespace Server
         void ReceiveMove(string sender, int fR, int fC, int tR, int tC, bool? isFinish, string pieceWasChanged);
         void NotifyIsInGame(string sender, bool isInGame);
         void ParticipantDisconnectedWinGame();
+        void ParticipantSurrended();
     }
 }
