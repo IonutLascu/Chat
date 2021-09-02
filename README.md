@@ -1,6 +1,7 @@
 # Chat - chess application
 
 Clone repository
+
 **git clone https://github.com/IonutLascu/Chat.git**
 
 Open project in Visual Studio 2017.
